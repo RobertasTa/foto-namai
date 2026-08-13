@@ -7,10 +7,10 @@
      Robertu (jis žadėjo grįžti); (3) Releases nuorodos atgis sukūrus
      repo RobertasTa/foto-namai. -->
 
-# FOTO namai
+# PHOTO home (FOTO namai)
 
 *Home photo archive organizer for Windows — free, open source, fully
-offline. "FOTO namai" is Lithuanian for "photo home".*
+offline. Born as "FOTO namai" — Lithuanian for photo home.*
 
 **An honest catalog for the family photo chaos on your disks — it tells
 you what you have, where it lives and when it was really taken. Nothing

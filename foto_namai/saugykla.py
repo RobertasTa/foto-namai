@@ -17,8 +17,11 @@ import shutil
 import sys
 from pathlib import Path
 
-PORTABLE_MARKER = "FotoNamai_portable.txt"
-APP_DIRNAME = "FotoNamai"
+# 2026-08-13 (Roberto galutinis vardo verdiktas pries v1.0 leidima,
+# kol pasaulyje nera ne vieno vartotojo duomenu): PhotoHome visur -
+# exe, duomenu katalogas, zymeklis. FotoNamai liko tik repo varde.
+PORTABLE_MARKER = "PhotoHome_portable.txt"
+APP_DIRNAME = "PhotoHome"
 
 
 def exe_dir():

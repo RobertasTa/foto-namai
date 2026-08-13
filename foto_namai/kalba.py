@@ -350,10 +350,10 @@ _EN = {
         "Portable mode (everything next to the app)",
     "Ijungta: indeksas ir darbiniai failai saugomi salia programos"
     " (pvz., flesiuke).\nIsjungta (numatyta): vartotojo kataloge"
-    " %LOCALAPPDATA%\\FotoNamai.":
+    " %LOCALAPPDATA%\\PhotoHome.":
         "On: the index and working files live next to the app (e.g. on a"
         " USB stick).\nOff (default): in the user folder"
-        " %LOCALAPPDATA%\\FotoNamai.",
+        " %LOCALAPPDATA%\\PhotoHome.",
     "Nepavyko perjungti rezimo: {}": "Could not switch mode: {}",
     "Portable rezimas IJUNGTAS - duomenys salia programos.":
         "Portable mode is ON - data lives next to the app.",

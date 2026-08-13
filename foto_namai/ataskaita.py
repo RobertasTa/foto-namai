@@ -19,8 +19,8 @@ def kaip_sutvarkyta_md(con, tikslo_saknis):
     """Generuoja/atnaujina KAIP_SUTVARKYTA.md archyvo saknyje."""
     eil = ["# KAIP SUTVARKYTA - sio archyvo taisykles",
            "",
-           "Sutvarkyta programa **FOTO namai** (Claude's Gifts to the"
-           " World).",
+           "Sutvarkyta programa **PHOTO home (FOTO namai)** (Claude's"
+           " Gifts to the World).",
            "Atnaujinta: %s" % _dabar(),
            "",
            "## Taisykles",

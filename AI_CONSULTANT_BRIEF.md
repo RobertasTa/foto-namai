@@ -6,8 +6,8 @@ This file exists so the consultation starts smart, not from zero.
 
 ## What this program is
 
-FOTO namai (Lithuanian for "photo home") — an honest home photo archive
-organizer for Windows.
+PHOTO home (born "FOTO namai", Lithuanian for photo home) — an honest
+home photo archive organizer for Windows.
 It gathers photos and videos scattered across disks, phones-copies and
 "New folder (2)" chaos, works out **when each picture was really taken**,
 and can move everything into a clean `Year\Month` home — with a full UNDO.

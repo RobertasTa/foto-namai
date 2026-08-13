@@ -18,7 +18,7 @@ def main():
     # savo AppUserModelID (be sito ikona atsiras tik exe builde).
     try:
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
-            "ClaudeGifts.FotoNamai")
+            "ClaudeGifts.PhotoHome")
     except Exception:
         pass
     app = QApplication(sys.argv)

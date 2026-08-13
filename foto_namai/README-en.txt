@@ -1,11 +1,12 @@
 =====================================================================
-  FOTO NAMAI v1.0 - home photo archive organizer
+  PHOTO HOME (FOTO namai) v1.0 - home photo archive organizer
   Robertas & Claude, 2026
 =====================================================================
 
 WHAT IS THIS?
 
-  FOTO namai (Lithuanian for "photo home") cleans up your photo
+  PHOTO home (originally "FOTO namai", Lithuanian for photo home)
+  cleans up your photo
   "dump": it gathers photos and
   videos from several places (phone copies, Downloads, old drives),
   figures out WHEN each photo was taken, and lays everything out
@@ -18,7 +19,7 @@ WHAT IS THIS?
 WHAT IT IS NOT
 
   It is not a viewer/gallery - use your favourite one for browsing
-  (IrfanView, Windows Photos, etc.). FOTO namai is an ORGANIZER:
+  (IrfanView, Windows Photos, etc.). PHOTO home is an ORGANIZER:
   its job is getting files into the right places.
 
 TWO STAGES - THE SAFETY FOUNDATION
@@ -130,7 +131,7 @@ HOW TO GET PHOTOS OFF YOUR PHONE
      WhatsApp - Android\media\com.whatsapp\WhatsApp\Media.
   3. Copy the folders to your computer or an external drive
      (originals stay untouched on the phone).
-  4. In FOTO namai press "Add folder..." -> index.
+  4. In PHOTO home press "Add folder..." -> index.
 
   One more path - the cloud: Google Photos / OneDrive already
   download photos into a computer folder - just add that
@@ -149,13 +150,13 @@ DUPLICATES
 
 WHERE THE PROGRAM KEEPS ITS DATA
 
-  Index and settings: C:\Users\<you>\AppData\Local\FotoNamai\
+  Index and settings: C:\Users\<you>\AppData\Local\PhotoHome\
   After organizing, two human-readable files appear in the
   archive root: KAIP_SUTVARKYTA.md (the rules used) and
   UNDO_ZURNALAS.md (what came from where).
 
   Portable mode (advanced): put an empty file named
-  FotoNamai_portable.txt next to the program - all data will
+  PhotoHome_portable.txt next to the program - all data will
   then travel with it (e.g. on a flash drive).
 
 REQUIREMENTS AND NOTES
@@ -192,7 +193,7 @@ FAMILY OF GIFTS (all free, no ads)
 
   1. Smart Duplicate Finder - duplicate file finder. Run it first.
   2. Temp Cleaner - temp file cleanup with explanations.
-  3. FOTO namai - home photo archive organizer. This program.
+  3. PHOTO home (FOTO namai) - home photo archive organizer. This program.
 
   Author page: https://github.com/RobertasTa
 

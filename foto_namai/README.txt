@@ -1,11 +1,11 @@
 =====================================================================
-  FOTO NAMAI v1.0 - nuotrauku archyvo tvarkytojas
+  PHOTO HOME (FOTO namai) v1.0 - nuotrauku archyvo tvarkytojas
   Robertas & Claude, 2026
 =====================================================================
 
 KAS TAI?
 
-  FOTO namai sutvarko nuotrauku "savartyna": surenka nuotraukas ir
+  PHOTO home (FOTO namai) sutvarko nuotrauku "savartyna": surenka nuotraukas ir
   video is keliu vietu (telefonu kopijos, Downloads, seni diskai),
   issprendzia KADA nuotrauka daryta, ir sudeda viska i svaria
   Metai\Menuo struktura. Su pilnu UNDO - viska galima grazinti atgal
@@ -17,7 +17,7 @@ KAS TAI?
 KAS TAI NERA
 
   Tai ne perziuros programa (galerija) - perziurai naudokite savo
-  megstama (IrfanView, Windows Photos ir pan.). FOTO namai yra
+  megstama (IrfanView, Windows Photos ir pan.). PHOTO home yra
   TVARKYTOJAS: jo darbas - kad failai atsidurtu teisingose vietose.
 
 DVI PAKOPOS - SAUGUMO PAGRINDAS
@@ -149,13 +149,13 @@ DUBLIKATAI
 
 KUR PROGRAMA LAIKO SAVO DUOMENIS
 
-  Indeksas ir nustatymai: C:\Users\<jus>\AppData\Local\FotoNamai\
+  Indeksas ir nustatymai: C:\Users\<jus>\AppData\Local\PhotoHome\
   Archyvo saknyje po tvarkymo atsiranda du zmogui skirti failai:
   KAIP_SUTVARKYTA.md (pagal kokias taisykles sudeta) ir
   UNDO_ZURNALAS.md (kas is kur atkeliavo).
 
   Portable rezimas (patyrusiems): salia programos padekite tuscia
-  faila FotoNamai_portable.txt - tada visi duomenys keliaus kartu
+  faila PhotoHome_portable.txt - tada visi duomenys keliaus kartu
   su programa (pvz., flesiuke).
 
 REIKALAVIMAI IR PASTABOS
@@ -192,7 +192,7 @@ SEIMOS DOVANOS (visos nemokamos, be reklamu)
 
   1. Smart Duplicate Finder - dubliuotu failu paieska. Pirma jis.
   2. Temp Cleaner - laikinu failu tvarkymas su paaiskinimais.
-  3. FOTO namai - nuotrauku archyvo tvarkytojas. Sita programa.
+  3. PHOTO home (FOTO namai) - nuotrauku archyvo tvarkytojas. Sita programa.
 
   Kurejo puslapis: https://github.com/RobertasTa
 

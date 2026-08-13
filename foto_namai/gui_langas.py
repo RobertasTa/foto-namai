@@ -152,7 +152,7 @@ class MainWindow(QMainWindow):
         self._laikrodis.setInterval(1000)
         self._laikrodis.timeout.connect(self._tiksi)
 
-        self.setWindowTitle(t("FOTO namai"))
+        self.setWindowTitle("PHOTO home")
         # Ikona - GPT draugo piesinys 2026-08-07 (_darbal\ikonos, gamyba
         # per _darbal\ikona_gamyba.py); _MEIPASS guard busimam exe.
         ikona = Path(getattr(sys, "_MEIPASS",
@@ -173,7 +173,8 @@ class MainWindow(QMainWindow):
         stulpas = QVBoxLayout(centras)
 
         virsus = QHBoxLayout()
-        antraste = QLabel(t("FOTO namai - nuotrauku archyvo tvarkytojas"))
+        antraste = QLabel(t("PHOTO home (FOTO namai) - nuotrauku"
+                            " archyvo tvarkytojas"))
         antraste.setStyleSheet(stilius.ANTRASTE)
         virsus.addWidget(antraste, stretch=1)
         virsus.addWidget(self._statyti_pagalbos_mygtuka(),
@@ -372,9 +373,9 @@ class MainWindow(QMainWindow):
         # LLM su anglu draugauja geriausiai; kalba pokalbyje vartotojas
         # persijungs pats - jokiu papildomu nurodymu nededam).
         promptas = (
-            'Hi! I am using the app "FOTO namai" - a home photo'
-            " archive organizer. Its source code is public on the"
-            " author's GitHub profile: https://github.com/RobertasTa."
+            'Hi! I am using the app "PHOTO home" (FOTO namai) - a home'
+            " photo archive organizer. Its source code is public:"
+            " https://github.com/RobertasTa/foto-namai."
             " Please read the program's code and README, then answer my"
             " question in plain, human language - no programmer jargon."
             " My question: ")
@@ -394,7 +395,7 @@ class MainWindow(QMainWindow):
             logo.setPixmap(QIcon(str(ico)).pixmap(64, 64))
         virsus.addWidget(logo, alignment=Qt.AlignmentFlag.AlignTop)
         info = QVBoxLayout()
-        pavadinimas = QLabel("FOTO namai")
+        pavadinimas = QLabel("PHOTO home (FOTO namai)")
         pavadinimas.setStyleSheet("font-size: 14pt; font-weight: bold;")
         info.addWidget(pavadinimas)
         info.addWidget(QLabel(
@@ -406,12 +407,12 @@ class MainWindow(QMainWindow):
         info.addWidget(autoriai)
         virsus.addLayout(info)
         lay.addLayout(virsus)
-        # Profilio nuoroda (repo vardas dar nespretas - PLANAS 4b.3);
+        # Repo nuoroda (vardas isspretas 2026-08-13: foto-namai);
         # ryski melyna + bold, kad matytusi jog spaudziama (SDF pamoka)
         nuoroda = QLabel(
             t("Kurejo puslapis:") + ' <a href="https://github.com/'
-            'RobertasTa" style="color:#2f7ce0;font-weight:bold;">'
-            'GitHub</a>')
+            'RobertasTa/foto-namai" style="color:#2f7ce0;'
+            'font-weight:bold;">GitHub</a>')
         nuoroda.setOpenExternalLinks(True)
         lay.addWidget(nuoroda)
         mygtukai = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)

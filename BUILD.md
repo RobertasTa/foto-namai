@@ -8,30 +8,30 @@
   pamoka) is repo saknies:
 
 ```
-.venv\Scripts\python.exe -m PyInstaller FotoNamai.spec --noconfirm
+.venv\Scripts\python.exe -m PyInstaller PhotoHome.spec --noconfirm
 ```
 
 ## Kas gaunasi
 
-`dist\FotoNamai\` - onedir paketas (PLANAS sprendimas 15: NE onefile):
+`dist\PhotoHome\` - onedir paketas (PLANAS sprendimas 15: NE onefile):
 
-- `FotoNamai.exe` + `_internal\` (DLL, Qt, ikona, README.txt/-en.txt,
+- `PhotoHome.exe` + `_internal\` (DLL, Qt, ikona, README.txt/-en.txt,
   zinynas_vietos.json - visi datas per sys._MEIPASS guard).
 - ~131 MB nespausta (PyQt6); zip suspaudzia gerokai.
 
 ## Zip flesiukui / Release asset
 
 ```
-Compress-Archive -Path "dist\FotoNamai" -DestinationPath "dist\FotoNamai-v1.0-win64.zip" -Force
+Compress-Archive -Path "dist\PhotoHome" -DestinationPath "dist\PhotoHome-v1.0-win64.zip" -Force
 ```
 
-Vartotojui: issipakuoji kur nori, leidi FotoNamai.exe. Duomenys -
-%LOCALAPPDATA%\FotoNamai; portable rezimas - tuscias
-`FotoNamai_portable.txt` SALIA exe (sprendimas 33 - prefiksuotas vardas!).
+Vartotojui: issipakuoji kur nori, leidi PhotoHome.exe. Duomenys -
+%LOCALAPPDATA%\PhotoHome; portable rezimas - tuscias
+`PhotoHome_portable.txt` SALIA exe (sprendimas 33 - prefiksuotas vardas!).
 
 ## Smoke po build'o (privalomas)
 
-1. `dist\FotoNamai\FotoNamai.exe` - langas per ~1-2 s, ikona taskbar'e.
+1. `dist\PhotoHome\PhotoHome.exe` - langas per ~1-2 s, ikona taskbar'e.
 2. "?" -> Apie (versija!) ir Instrukcija (README LT; perjungus kalba - EN).
 3. Zvalgyba ant nedidelio aplanko + paieska su miniatiuromis.
 4. Jei krenta be pranesimo - perbuild su console=True spec'e ir
