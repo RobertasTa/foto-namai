@@ -63,8 +63,12 @@ _EN = {
     # GitHub'e uzimtas svetimo projekto; prekes zenklas - FOTO namai,
     # paieskai dirba angliskas paaiskinimas salia)
     "FOTO namai": "FOTO namai",
+    # EN antrasteje vardas paliekamas, bet skliaustuose isverstas
+    # (Roberto 2026-08-13, trecias primygtinis: "net meska atpazins,
+    # kad FOTO = photo, houm = namai") - Photo Home cia yra vertimo
+    # glosa, ne produkto vardas (PhotoHome kolizija negalioja).
     "FOTO namai - nuotrauku archyvo tvarkytojas":
-        "FOTO namai - home photo archive organizer",
+        "FOTO namai (Photo Home) - home photo archive organizer",
     "Saltiniai (varneles - ka skenuoti):":
         "Sources (tick what to scan):",
     "Saltinis": "Source",
