@@ -1,0 +1,38 @@
+name: Tests
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  tests:
+    # Windows runner: the app targets Windows (volume serials, MTP paths,
+    # Explorer integration); the checks create real NTFS junctions.
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Generate the proving ground (fixed seed, reproducible)
+        run: python poligonas_gen.py
+      - name: Run checks (non-GUI core suite)
+        # GUI checks (offscreen Qt) run locally before every release;
+        # CI runs the headless engine suite for fast, stable signal.
+        run: |
+          $suite = @("patikra_e1","patikra_e2","patikra_e2_egzaminas",
+                     "patikra_e4","patikra_e5_paieska","patikra_e6_egzaminas",
+                     "patikra_e7_siuksles","patikra_hashai","patikra_higiena")
+          foreach ($p in $suite) {
+            Write-Host "=== $p ==="
+            python "foto_namai/_patikros/$p.py"
+            if ($LASTEXITCODE -ne 0) { exit 1 }
+          }

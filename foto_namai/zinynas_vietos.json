@@ -1,0 +1,12 @@
+[
+  {"vardas": "Atsisiuntimai (Downloads)",
+   "kelias": "%USERPROFILE%\\Downloads", "pastaba": ""},
+  {"vardas": "Paveiksleliai (Pictures)",
+   "kelias": "%USERPROFILE%\\Pictures", "pastaba": ""},
+  {"vardas": "OneDrive Camera Roll",
+   "kelias": "%OneDrive%\\Pictures\\Camera Roll", "pastaba": ""},
+  {"vardas": "OneDrive Paveiksleliai",
+   "kelias": "%OneDrive%\\Pictures", "pastaba": ""},
+  {"vardas": "WhatsApp Images",
+   "kelias": "%USERPROFILE%\\Pictures\\WhatsApp Images", "pastaba": ""}
+]

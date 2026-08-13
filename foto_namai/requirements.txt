@@ -1,0 +1,6 @@
+# Minimalus venv (PLANAS E0: "daugiau nieko be aptarimo!").
+# pillow-heif - 4b.1 sprendimas (HEIC skaitymas v1, graceful degradation).
+PyQt6
+Pillow
+piexif
+pillow-heif
