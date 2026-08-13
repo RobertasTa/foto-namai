@@ -180,6 +180,19 @@ class MainWindow(QMainWindow):
                          alignment=Qt.AlignmentFlag.AlignTop)
         stulpas.addLayout(virsus)
 
+        # Kalbos combobox - skirtuku juostos desiniajame kampe (Roberto
+        # pastaba 2026-08-13 per E8 smoke, patikslinta gyvai: tame
+        # paciame aukstyje kaip Tvarkymas/Paieska; apacioje tarp veiksmo
+        # mygtuku jis pasimesdavo, EN vartotojas jo nerasdavo).
+        self._cmb_kalba = QComboBox()
+        self._cmb_kalba.addItem("Lietuvių", "lt")   # ASCII kode
+        self._cmb_kalba.addItem("English", "en")
+        from kalba import LANG as _dabartine_kalba
+        self._cmb_kalba.setCurrentIndex(1 if _dabartine_kalba == "en" else 0)
+        self._cmb_kalba.setToolTip(
+            t("Kalba pritaikoma paleidus programa is naujo."))
+        self._cmb_kalba.currentIndexChanged.connect(self._on_kalba_changed)
+
         # Du skirtukai (E5): A pakopos Tvarkymas + Paieska (sprendimas 29)
         tvarkymas = QWidget()
         stulpas_t = QVBoxLayout(tvarkymas)
@@ -245,23 +258,17 @@ class MainWindow(QMainWindow):
         eilute2.addWidget(self._btn_undo)
         eilute2.addStretch(1)
 
-        # Seimos DNR (sprendimas 22): kalbos combobox. Portable varneles
-        # GUI NEBERA (Roberto verdiktas 2026-08-07: FOTO namai - kompo
-        # irankis su DB; mechanizmas saugykla.py lieka, zymeklis ranka).
-        self._cmb_kalba = QComboBox()
-        self._cmb_kalba.addItem("Lietuvių", "lt")   # "Lietuviu" su u-nosine; ASCII kode
-        self._cmb_kalba.addItem("English", "en")
-        from kalba import LANG as _dabartine_kalba
-        self._cmb_kalba.setCurrentIndex(1 if _dabartine_kalba == "en" else 0)
-        self._cmb_kalba.setToolTip(
-            t("Kalba pritaikoma paleidus programa is naujo."))
-        self._cmb_kalba.currentIndexChanged.connect(self._on_kalba_changed)
-        eilute2.addWidget(self._cmb_kalba)
+        # Kalbos combobox iskeltas i virsu prie "?" (Roberto pastaba
+        # 2026-08-13); portable varneles GUI NEBERA (Roberto verdiktas
+        # 2026-08-07: kompo irankis su DB; saugykla.py mechanizmas lieka).
         stulpas_t.addLayout(eilute2)
 
         self._tabs = QTabWidget()
         self._tabs.addTab(tvarkymas, t("Tvarkymas"))
         self._tabs.addTab(self._statyti_paieskos_tab(), t("Paieska"))
+        # Kalba gyvena skirtuku eiluteje (enum pilnu keliu - OKF guard)
+        self._tabs.setCornerWidget(self._cmb_kalba,
+                                   Qt.Corner.TopRightCorner)
         stulpas.addWidget(self._tabs, stretch=5)
 
         stulpas.addWidget(QLabel(t("Zurnalas:")))
@@ -1014,8 +1021,10 @@ class MainWindow(QMainWindow):
                 lentynu = con.execute(
                     "SELECT COUNT(*) FROM lentynos").fetchone()[0]
                 con.close()
-            except Exception:
-                pass
+            except Exception as e:
+                # Tyli klaida cia reiske melaginga "Indeksas tuscias"
+                # (E8 smoke radinys 2026-08-13) - klaida rodoma zurnale.
+                self._log("Indekso skaitymo klaida: %r" % (e,))
         if failu:
             self._indekso_busena.setText(t("Indekse: {} {}, {} {}").format(
                 failu, kiekio_zodis(failu, "failas"),
