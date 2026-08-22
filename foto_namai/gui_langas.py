@@ -372,12 +372,16 @@ class MainWindow(QMainWindow):
         # Promptas VISADA anglu k. (Roberto patikslinimas 2026-08-08:
         # LLM su anglu draugauja geriausiai; kalba pokalbyje vartotojas
         # persijungs pats - jokiu papildomu nurodymu nededam).
+        # 2026-08-22 SDF gyvo testo pamoka: be tiesioginio paminejimo
+        # debesinis skaito TIK README ir brief'o neatranda.
         promptas = (
             'Hi! I am using the app "PHOTO home" (FOTO namai) - a home'
             " photo archive organizer. Its source code is public:"
             " https://github.com/RobertasTa/foto-namai."
-            " Please read the program's code and README, then answer my"
-            " question in plain, human language - no programmer jargon."
+            " Please FIRST read the file AI_CONSULTANT_BRIEF.md in that"
+            " repository - it is your briefing from the author - then the"
+            " program's code and README, and answer my question in plain,"
+            " human language - no programmer jargon."
             " My question: ")
         webbrowser.open("https://claude.ai/new?q="
                         + urllib.parse.quote(promptas))
