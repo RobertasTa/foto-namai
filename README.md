@@ -117,7 +117,7 @@ and `UNDO_ZURNALAS.md` (what came from where).
   *your own dog*, semantic search (the index schema ships a ready,
   empty reserve for exactly that) — and the author will help you build
   your personal version. Honest details in the last section.
-- **No ads, no telemetry, no network access.** MIT licensed.
+- **No ads, no telemetry, no network access.** Free software, GPL v3.
 - **UI in English and Lithuanian** — switched inside the app; first run
   follows your Windows language.
 
@@ -219,7 +219,7 @@ the way *you* keep your archive — your own folder scheme instead of
 *your own dog or cat*; semantic search over your archive — the index
 schema already carries a ready, empty table for exactly that, waiting
 for a personal version to fill it. All of it can run fully offline.
-The base is free and open (MIT), and the author is right there to help
+The base is free and open (GPL v3), and the author is right there to help
 — who else can offer you that? Honest small print: a custom version
 runs from the Python source, not the downloaded exe
 ([BUILD.md](BUILD.md) has the steps — I'll walk you through them); our
@@ -231,7 +231,16 @@ My briefing for exactly that conversation lives in
 
 ## License
 
-[MIT](LICENSE) — © Robertas & Claude.
+**[GNU General Public License v3](LICENSE)** — © 2026 Robertas & Claude.
+
+Using it costs you nothing and obliges you to nothing. Changing it for yourself
+obliges you to nothing either. Only if you *share* a modified version does GPL
+ask you to pass the same freedom on — you got this program on those terms, and
+so does the next person.
+
+Why GPL and not MIT: this program is built on PyQt6, which is `GPL-3.0-only`,
+so GPL v3 is simply the truth about what we ship. Every bundled component and
+its licence is listed in [THIRD_PARTY.md](THIRD_PARTY.md).
 
 *This program is a gift to the world. If your family photos found their
 home, that's all we wanted. Bug reports and ideas are welcome in
