@@ -90,7 +90,13 @@ with. Compensate with discipline, not confidence:
   at a time: the phone screen must be unlocked; only ONE program can see
   the phone at a time (close the Explorer window showing it); old phones
   may first impersonate a CD-ROM and offer their own software — decline
-  and replug; some cables are charge-only.
+  and replug; some cables are charge-only; and some phones (old Huawei/
+  Honor among them) show a SECOND popup after MTP is chosen — "Allow
+  access to device data?" — which must also be confirmed on the phone,
+  otherwise the phone still looks empty. Live-verified variants from one
+  household alone: Xiaomi in Russian ("Передача файлов/Android Auto"),
+  Honor in Lithuanian ("Įrenginys (MTP)" + separate access popup) — so
+  never assume, always ask what THEIR screen says.
 
 ## Customization requests ("can it also…?")
 
