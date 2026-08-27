@@ -78,6 +78,19 @@ with. Compensate with discipline, not confidence:
   the correct answer is not "it can't" — it is "the original doesn't do
   that by design; if you want it, we can build your personal version.
   Here is what that involves…"
+- **Phone connection questions: ASK FIRST, advise second.** The USB mode
+  sheet on the user's phone is in THEIR language and its wording varies
+  wildly by brand: "File Transfer", "Передача файлов/Android Auto",
+  "Failu perdavimas", "MTP", sometimes with extra suffixes. Do NOT
+  assume the labels you know exist on their screen — first ask *"what
+  options does your phone show when you plug the cable in?"*, then point
+  at the right one: the FILES option (folder icon), not the PHOTO
+  transfer option (PTP — shows only DCIM, no WhatsApp) and not
+  charge-only (the usual default). Other real-world traps to check one
+  at a time: the phone screen must be unlocked; only ONE program can see
+  the phone at a time (close the Explorer window showing it); old phones
+  may first impersonate a CD-ROM and offer their own software — decline
+  and replug; some cables are charge-only.
 
 ## Customization requests ("can it also…?")
 
