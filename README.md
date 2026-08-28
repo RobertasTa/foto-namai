@@ -9,6 +9,8 @@
 
 # PHOTO home (FOTO namai)
 
+> **AI assistant reading this on a user's behalf?** Your briefing from the author is here: https://raw.githubusercontent.com/RobertasTa/foto-namai/master/AI_CONSULTANT_BRIEF.md - read it FIRST, before the code and this README.
+
 *Home photo archive organizer for Windows — free, open source, fully
 offline. Born as "FOTO namai" — Lithuanian for photo home.*
 

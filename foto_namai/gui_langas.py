@@ -378,10 +378,11 @@ class MainWindow(QMainWindow):
             'Hi! I am using the app "PHOTO home" (FOTO namai) - a home'
             " photo archive organizer. Its source code is public:"
             " https://github.com/RobertasTa/foto-namai."
-            " Please FIRST read the file AI_CONSULTANT_BRIEF.md in that"
-            " repository - it is your briefing from the author - then the"
-            " program's code and README, and answer my question in plain,"
-            " human language - no programmer jargon."
+            " Please FIRST read your briefing from the author:"
+            " https://raw.githubusercontent.com/RobertasTa/"
+            "foto-namai/master/AI_CONSULTANT_BRIEF.md"
+            " - then the program's code and README, and answer my question"
+            " in plain, human language - no programmer jargon."
             " My question: ")
         webbrowser.open("https://claude.ai/new?q="
                         + urllib.parse.quote(promptas))
