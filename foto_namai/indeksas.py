@@ -13,6 +13,7 @@ OKF_sqlite3 guard'o taisykles, kuriu LAIKOMES:
 
 import sqlite3
 from datetime import date, datetime
+from pathlib import Path
 
 DB_VARDAS = "indeksas.db"
 
@@ -96,6 +97,14 @@ def dayid_i_iso(dayid):
 
 def atidaryti(db_kelias):
     """Rasymo jungtis. KVIESTI toje gijoje, kuri ja naudos (guard 1)."""
+    # KLIURKA 11 (2026-08-23, Roberto GUI ratas ant SVARIOS sistemos):
+    # SQLite failo neegzistuojanciame kataloge NESUKURIA - pirmas
+    # paleidimas nauju kompiuteriu krito "unable to open database file".
+    # Katalogas kuriamas CIA, viename taske: taip nei GUI, nei patikros,
+    # nei busimi moduliai to nebepamirs.
+    kelias = Path(db_kelias)
+    if kelias.parent and not kelias.parent.exists():
+        kelias.parent.mkdir(parents=True, exist_ok=True)
     con = sqlite3.connect(str(db_kelias))
     con.execute("PRAGMA journal_mode=WAL")
     con.execute("PRAGMA synchronous=NORMAL")
@@ -113,6 +122,7 @@ def atidaryti(db_kelias):
     _migracija_36(con)
     _migracija_siuksles(con)
     _migracija_kameros(con)
+    _migracija_keliai(con)
     con.commit()
     return con
 
@@ -186,6 +196,55 @@ def _migracija_kameros(con):
     con.execute("PRAGMA user_version = 3")
 
 
+def _migracija_keliai(con):
+    """KLIURKA 24 (Roberto gyvas ratas 2026-08-25): santykinis kelias buvo
+    skaiciuojamas nuo SALTINIO saknies, o ne nuo lentynos (tomo), nors
+    sprendimas 30 sako "kelias LENTYNOJE". Pasekme: tas pats failas,
+    pasiektas per Pictures IR per Pictures\\Screenshots, gaudavo du
+    skirtingus adresus - indekse 13757 irasu vietoj 6887.
+
+    Perskaiciuojam: absoliutus = saltinio_saknis / santykinis_kelias,
+    naujas kelias = absoliutus nuo tomo saknies. Kur po perskaiciavimo
+    du irasai sutampa - paliekam VIENA (dublis buvo fikcija, tas pats
+    failas diske). UNDO minimi irasai apsaugoti: ju netriname, kad
+    nesugriautume atstatymo istorijos."""
+    if con.execute("PRAGMA user_version").fetchone()[0] >= 4:
+        return
+    undo_id = {r[0] for r in con.execute(
+        "SELECT DISTINCT fileid FROM undo WHERE fileid IS NOT NULL"
+    ).fetchall()}
+    matyti = {}
+    istrinta = 0
+    pataisyta = 0
+    for fid, lid, saltinis, kelias in con.execute(
+            "SELECT id, lentyna_id, saltinio_saknis, santykinis_kelias"
+            " FROM failai ORDER BY id").fetchall():
+        if not saltinis:
+            continue                      # nera is ko atkurti - paliekam
+        try:
+            absoliutus = Path(saltinis) / kelias
+            anchor = Path(absoliutus).anchor
+            naujas = str(absoliutus.relative_to(anchor)) if anchor else kelias
+        except (ValueError, OSError):
+            continue
+        raktas = (lid, naujas.lower())
+        if raktas in matyti:
+            # tas pats fizinis failas jau yra - sis irasas buvo dublis
+            if fid in undo_id:
+                continue                  # UNDO saugiklis: neliesti
+            con.execute("DELETE FROM failai WHERE id=?", (fid,))
+            istrinta += 1
+            continue
+        matyti[raktas] = fid
+        if naujas != kelias or (anchor and saltinis != anchor):
+            con.execute(
+                "UPDATE failai SET santykinis_kelias=?, saltinio_saknis=?"
+                " WHERE id=?", (naujas, anchor or saltinis, fid))
+            pataisyta += 1
+    _MIGRACIJU_VALYMAI[0] += istrinta
+    con.execute("PRAGMA user_version = 4")
+
+
 def atidaryti_ro(db_kelias):
     """Read-only jungtis GUI skaitymui (mode=ro per URI, guard 1)."""
     con = sqlite3.connect("file:%s?mode=ro" % str(db_kelias), uri=True)
@@ -222,12 +281,22 @@ def registruoti_lentyna(con, volume_serial, vardas_zmogui, etikete=None,
 
 def ar_nepakites(con, lentyna_id, santykinis_kelias, dydis, mtime):
     """Inkrementiskumas (sprendimas 1): ar failas jau indekse ir nepakites
-    (dydis + mtime sutampa)? Tada indeksavimo faze ji PRALEIDZIA."""
+    (dydis + mtime sutampa)? Tada indeksavimo faze ji PRALEIDZIA.
+
+    DST tolerancija (2026-08-22, Camera Bits t=14873 pamoka): FAT32/exFAT
+    diske laiko LOKALU laika, todel po vasaros/ziemos laiko suolio to PATIES
+    failo st_mtime pasislenka LYGIAI +-1 h ar +-2 h. Toks poslinkis su
+    nepakitusiu dydziu = tas pats failas, kitaip visa flesiuko lentyna
+    beprasmiskai perindeksuojama dukart per metus (Photo Mechanic liga)."""
     eil = con.execute(
         "SELECT dydis, mtime FROM failai WHERE lentyna_id=?"
         " AND santykinis_kelias=?",
         (lentyna_id, santykinis_kelias)).fetchone()
-    return bool(eil) and eil[0] == dydis and abs(eil[1] - mtime) < 2.0
+    if not eil or eil[0] != dydis:
+        return False
+    skirtumas = abs(eil[1] - mtime)
+    return any(abs(skirtumas - poslinkis) < 2.0
+               for poslinkis in (0.0, 3600.0, 7200.0))
 
 
 _IRASO_LAUKAI = ("lentyna_id", "santykinis_kelias", "vardas", "dydis",

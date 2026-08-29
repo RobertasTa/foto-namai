@@ -15,6 +15,7 @@ from PIL import Image
 
 import indeksas
 import indeksavimas
+import models
 import tvarkytojas
 
 POLIGONAS = (Path(__file__).resolve().parent.parent.parent
@@ -62,10 +63,20 @@ def main():
         # --- planas ---
         grupes = tvarkytojas.siulyti_plana(con)
         pagal_varda = {g["grupe"]: g for g in grupes}
-        chk("gr_skrinsotai", pagal_varda.get("_SKRINSOTAI", {}).get(
-            "failai") == 8, pagal_varda.get("_SKRINSOTAI"))
-        chk("gr_nepatikimos", pagal_varda.get("_NEPATIKIMOS_DATOS", {}).get(
-            "failai") == 7, pagal_varda.get("_NEPATIKIMOS_DATOS"))
+        # KLIURKA 23 (2026-08-25): skrinsotai nebeguli VIENAME ploksciame
+        # aplanke - jie skirstomi _SCREENSHOTS\Metai\Menuo. Todel cia
+        # sumuojam per visas skrinsotu pogrupes, o ne imam viena eilute.
+        skr_failai = sum(
+            g["failai"] for g in grupes
+            if g["grupe"] == models.GRUPE_SKRINSOTAI
+            or g["grupe"].startswith(models.GRUPE_SKRINSOTAI + "\\"))
+        chk("gr_skrinsotai", skr_failai == 8, skr_failai)
+        chk("gr_skrinsotai_medyje",
+            any(g["grupe"].startswith(models.GRUPE_SKRINSOTAI + "\\")
+                for g in grupes),
+            [g["grupe"] for g in grupes])
+        chk("gr_nepatikimos", pagal_varda.get(models.GRUPE_NEPATIKIMOS, {}).get(
+            "failai") == 7, pagal_varda.get(models.GRUPE_NEPATIKIMOS))
         chk("gr_live", pagal_varda.get("2020\\05", {}).get("failai") == 2,
             pagal_varda.get("2020\\05"))
         chk("gr_dubliai",
@@ -106,8 +117,14 @@ def main():
         # --- archyvo struktura ---
         chk("arch_live_mov", (archyvas / "2020" / "05"
                               / "IMG_7777.MOV").exists())
+        # kliurka 23: rekursyviai - jie dabar guli _SCREENSHOTS\Metai\Menuo
         chk("arch_skrinsotai",
-            len(list((archyvas / "_SKRINSOTAI").glob("*.png"))) == 8)
+            len(list((archyvas / models.GRUPE_SKRINSOTAI)
+                     .rglob("*.png"))) == 8)
+        chk("arch_skrinsotu_medis",
+            any(p.is_dir() for p in
+                (archyvas / models.GRUPE_SKRINSOTAI).iterdir()),
+            "skrinsotai tebeguli ploksciai")
         chk("arch_kolizija",
             (archyvas / "2023" / "03" / "IMG-20230318-WA0006-2.jpg").exists())
         chk("arch_kolizija_orig",
@@ -130,9 +147,21 @@ def main():
             (archyvas / "2023" / "03" / "IMG-20230318-WA0006.jpg").exists())
         salt_po = sum(1 for f in saltinis.rglob("*") if f.is_file())
         chk("undo_originalai", salt_po == 69, salt_po)
-        atstatytu = con.execute("SELECT COUNT(*) FROM failai"
-                                " WHERE busena='ATSTATYTAS'").fetchone()[0]
-        chk("undo_busenos", atstatytu == 63, atstatytu)
+        # KLIURKA 14 (2026-08-23): anksciau cia buvo tikrinama, kad po UNDO
+        # lieka 63 ATSTATYTAS irasai - tai buvo KLAIDINGO elgesio tvirtinimas.
+        # Toks indeksas nebeleisdavo tvarkyti antra karta ("Nothing to
+        # organize"). Dabar UNDO grazina failus i darbine busena, o istorija
+        # gyvena undo lenteleje. Pilnas dvieju ratu testas -
+        # patikra_ratas_du_kartus.py.
+        atstatyta_zurnale = con.execute(
+            "SELECT COUNT(*) FROM undo WHERE atstatyta=1").fetchone()[0]
+        chk("undo_zurnalas", atstatyta_zurnale == 63, atstatyta_zurnale)
+        chk("undo_busenos_grazintos",
+            con.execute("SELECT COUNT(*) FROM failai"
+                        " WHERE busena='ATSTATYTAS'").fetchone()[0] == 0)
+        chk("undo_vel_galima_tvarkyti",
+            con.execute("SELECT COUNT(*) FROM failai"
+                        " WHERE busena='SUINDEKSUOTAS'").fetchone()[0] >= 63)
 
         con.close()
 

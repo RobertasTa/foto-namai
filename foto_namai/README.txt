@@ -1,5 +1,5 @@
 =====================================================================
-  PHOTO HOME (FOTO namai) v1.0 - nuotrauku archyvo tvarkytojas
+  PHOTO HOME (FOTO namai) v1.0.0 - nuotrauku archyvo tvarkytojas
   Robertas & Claude, 2026
 =====================================================================
 
@@ -45,6 +45,7 @@ KAIP PRADETI (4 zingsniai)
      laikrodukas sukasi lango viduryje, o smulkesnis progresas -
      juostoje pacioje lango apacioje. Atsaukti galima bet kada
      be zalos - kita karta bus testama nuo sustojimo vietos.
+     Baigus programa parodys ARCHYVO RENTGENA (zr. zemiau).
   4. Skirtuke "Paieska" ieskokite pagal data, tipa, etikete,
      kamera ar failo varda. Dvigubas klikas - parodys faila
      Explorer'yje.
@@ -56,11 +57,33 @@ KAIP PROGRAMA NUSTATO DATA
   2. failo vardas (IMG-20230318-WA0006.jpg, Screenshot_2025...);
   3. aplanko vardas ("Joninges 2015" tampa ir etikete paieskoje);
   4. failo mtime - bet tada data pazymima NEPATIKIMA ir tokie
-     failai tvarkant keliauja i atskira _NEPATIKIMOS_DATOS
-     aplanka, kad nesimaisiytu su tikrai datuotais.
+     failai tvarkant keliauja i atskira _UNDATED aplanka, kad
+     nesimaisiytu su tikrai datuotais.
+  5. APLINKA (naujiena v1.0): jei failas be savo datos guli
+     aplanke, kurio kaimynai vieningai is vieno menesio, arba
+     atkeliavo vienoje partijoje su datuotais failais - jis
+     gauna kaimynu MEDIANOS data (saltinis "kaimynyste" arba
+     "partija"). Issibarsciusiu aplanku (savartynu) sis
+     sluoksnis neliecia - pats pasitikrina.
+
+ARCHYVO RENTGENAS (naujiena v1.0)
+
+  Po kiekvieno indeksavimo programa parodo ataskaita "KAS TAVO
+  ARCHYVE": kiek failu ir kur, is kur ju datos, kiek liko be
+  patikimos datos, LINIJA LAIKE ("nuo ~2009 jusu datos
+  patikimos") ir kokius backup katalogus praleido saugikliai.
+  Nieko nekilnoja - tik perskaityta ir suskaiciuota. Mygtukas
+  "Issaugoti ataskaita..." ideda ja i .md faila - galima
+  dalintis ar pasilikti palyginimui.
 
   Ekrano nuotraukos (screenshots) atpazistamos ir dedamos i
-  atskira _SKRINSOTAI aplanka - jos ne "prisiminimai".
+  atskira _SCREENSHOTS aplanka - jos ne "prisiminimai".
+
+  Siu dvieju aplanku vardai ANGLISKI ir tokie patys visomis
+  kalbomis. Priezastis paprasta: vardas gyvena JUSU DISKE, ne
+  ekrane. Jei jis keistusi kartu su programos kalba, persijungus
+  archyve atsirastu du aplankai, o nuotraukos pasidalintu per
+  abu. Vienas vardas - viena vieta.
   Netikri failai (.jpg vardas, bet ne nuotrauka; 0 baitu) -
   NEJUDINAMI, apie juos pranesama zurnale.
   Android siuksliadezes failai (.trashed-*) ir miniatiuru kesas
@@ -102,6 +125,22 @@ LENTYNOS - KELI DISKAI VIENAME INDEKSE
   diska". Disko raide (E:, F:) gali keistis kaip tinkama -
   programa diska atpazista pagal jo vidini numeri, ne pagal
   raide, tad jusu duotas vardas niekada nepasimeta.
+
+  KARTOTEKA (naujiena v1.0): suindeksuotu nuotrauku MINIATIUROS
+  lieka programoje ir rodomos net tada, kai diskas ATJUNGTAS -
+  atsirinkti galite akimis, kol lentyna guli stalciuje. Fonas
+  jas susipildo pats, jusu darbo netrukdydamas. Atidarant
+  originala be disko - programa mandagiai paprasys prijungti
+  lentyna.
+
+ATVERTI SAVO REDAKTORIUJE (naujiena v1.0)
+
+  Desiniu klavisu ant radinio - "Atverti su ..." atidarys faila
+  jusu megstamame redaktoriuje (Photoshop, Corel, kad ir Paint).
+  Sarasa susirasote patys: "Prideti/keisti redaktorius..."
+  atidaro paprasta nustatymu faila su pavyzdziu ir paaiskinimu.
+  Programa pati nieko neredaguoja - tik atiduoda faila; jusu
+  originalu ji nelies niekada.
 
 KAIP PAIMTI NUOTRAUKAS IS TELEFONO
 
@@ -145,7 +184,9 @@ DUBLIKATAI
   Tvarkant tas pats turinys i archyva antra karta NEKOPIJUOJAMAS
   (tikrinama pagal turini, ne pagal varda). Jei dublikatu daug,
   programa pasiulys pirma perleisti musu seimos dublikatu iranki
-  Smart Duplicate Finder, o tada tvarkyti.
+  Smart Duplicate Finder, o tada tvarkyti. Po indeksavimo is
+  karto parodomas kopiju IVERTIS (pagal vienoda dydi) -
+  patogiausias momentas susitvarkyti yra PRIES kraustymasi.
 
 KUR PROGRAMA LAIKO SAVO DUOMENIS
 

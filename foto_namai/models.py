@@ -5,7 +5,7 @@ PIPELINE.md (RASTAS -> SUINDEKSUOTAS -> SUPLANUOTAS -> SUTVARKYTAS ...).
 """
 
 # Programos versija (rodoma "Apie..." langelyje ir buduose)
-VERSIJA = "1.0"
+VERSIJA = "1.0.0"
 
 # Juodasis sarasas (PLANAS sprendimas 8, Nextcloud incidento pamoka):
 # sitie katalogai NIEKADA neskenuojami - "kopiju pasauliai" ir sisteminiai.
@@ -26,11 +26,41 @@ JUODASIS_SARASAS = {
 # stabdomos su graziu pranesimu, ne tylia mirtimi.
 MIN_LAISVA_VIETA_MB = 500
 
+# Specialiu archyvo aplanku vardai. ANGLISKI VISOMS KALBOMS - Roberto
+# sprendimas 2026-08-23 (gyvas GUI ratas: "cia pavadinimai lietuviski, nors
+# programa angliskai paleista"). Priezastis, kodel NE pagal GUI kalba:
+# aplanko vardas gyvena DISKE, ne ekrane - persijungus kalba archyve
+# atsirastu DU aplankai (_SKRINSOTAI ir _SCREENSHOTS) ir nuotraukos
+# pasidalintu. Vardas privalo buti vienas ir fiksuotas visam archyvo
+# gyvenimui. Lietuviska kilme lieka repo varde ir GUI antrasteje.
+# NEKEISTI po pirmo isleidimo - vardai lieka zmoniu diskuose.
+GRUPE_SKRINSOTAI = "_SCREENSHOTS"
+GRUPE_NEPATIKIMOS = "_UNDATED"
+
+# Lentynos vardo riba (sprendimas 30). TA PATI reiksme gyvena ir indekso
+# schemoje: CHECK (length(vardas_zmogui) <= 40). Krikstynu laukas nuo
+# 2026-08-23 (kliurka 12) su sia riba fiziskai neleidzia ivesti daugiau -
+# anksciau tyliai nukirpdavo.
+LENTYNOS_VARDO_RIBA = 40
+
 # Indeksavimo ivercio kalibravimas (E7 matavimas 2026-08-13, saltas HDD:
 # 2013 failu/7,3 GB - 129 MB/s ir ~13,7 ms/failui seek'ams; konservatyviai
 # HDD, nes SSD/keso atveju (1470 MB/s) tikras laikas tik maloniai trumpesnis).
 IVERTIS_MS_FAILUI = 15
 IVERTIS_MB_PER_S = 130
+
+
+def dydis_tekstu(baitai):
+    """Baitai -> zmogui skaitomas dydis (KLIURKA 18, Roberto laptopo ratas
+    2026-08-25): 140 failu rodydavo "0.00 GB" - sazininga, bet atrodo kaip
+    nulis arba gedimas. Receptas jau gyveno kopiju lange, tik nebuvo
+    pritaikytas kitur; dabar VIENA vieta visiems (GUI + ataskaita).
+    Vienetai nera verciami - "MB"/"GB" vienodi visomis kalbomis."""
+    if baitai >= 1073741824:
+        return "%.2f GB" % (baitai / 1073741824.0)
+    if baitai >= 1048576:
+        return "%.0f MB" % (baitai / 1048576.0)
+    return "%.0f KB" % (baitai / 1024.0)
 
 # Medijos galuniu sarasas (sprendimas 36, Roberto verdiktas 2026-08-07):
 # FOTO namai indeksuoja TIK medija - pdf/exe/zip/muzika "nieko bendro su

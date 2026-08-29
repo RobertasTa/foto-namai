@@ -1,5 +1,5 @@
 =====================================================================
-  PHOTO HOME (FOTO namai) v1.0 - home photo archive organizer
+  PHOTO HOME (FOTO namai) v1.0.0 - home photo archive organizer
   Robertas & Claude, 2026
 =====================================================================
 
@@ -48,6 +48,7 @@ GETTING STARTED (4 steps)
      spins in the middle of the window, and finer progress is
      in the bar at the very bottom. Cancel any time without
      harm - next run continues from where it stopped.
+     When done, the program shows an ARCHIVE X-RAY (see below).
   4. On the "Search" tab search by date, type, label, camera or
      file name. Double-click shows the file in Explorer.
 
@@ -58,11 +59,33 @@ HOW THE DATE IS RESOLVED
   2. file name (IMG-20230318-WA0006.jpg, Screenshot_2025...);
   3. folder name ("Midsummer 2015" also becomes a search label);
   4. file mtime - but then the date is marked UNRELIABLE and such
-     files go to a separate _NEPATIKIMOS_DATOS (unreliable dates)
-     folder so they never mix with truly dated ones.
+     files go to a separate _UNDATED folder so they never mix
+     with truly dated ones.
+  5. SURROUNDINGS (new in v1.0): if a dateless file sits in a
+     folder whose neighbours agree on one month, or arrived in
+     one batch with dated files, it receives the neighbours'
+     MEDIAN date (source "kaimynyste" or "partija"). Scattered
+     "junk drawer" folders are left alone - the layer checks
+     itself.
+
+ARCHIVE X-RAY (new in v1.0)
+
+  After every indexing run the program shows a "WHAT IS IN YOUR
+  ARCHIVE" report: how many files and where, where their dates
+  come from, how many lack a reliable date, the LINE IN TIME
+  ("from ~2009 your dates are reliable") and which backup
+  folders the safety rails skipped. Nothing is moved - only
+  read and counted. "Save report..." writes it to a .md file -
+  share it or keep it for comparison.
 
   Screenshots are recognized and placed into a separate
-  _SKRINSOTAI folder - they are not "memories".
+  _SCREENSHOTS folder - they are not "memories".
+
+  These two folder names are the same in every language. The
+  reason is simple: the name lives ON YOUR DISK, not on the
+  screen. If it followed the interface language, switching the
+  language would create a second folder and split your photos
+  between the two. One name - one place.
   Fake files (.jpg name but not an image; 0 bytes) are NOT
   moved; the journal explains why.
   Android trash files (.trashed-*) and thumbnail caches
@@ -103,6 +126,22 @@ SHELVES - SEVERAL DRIVES IN ONE INDEX
   drive in". Drive letters (E:, F:) may change freely - the
   drive is recognized by its internal serial, not the letter,
   so the name you gave never gets lost.
+
+  CARD FILE (new in v1.0): THUMBNAILS of indexed photos stay in
+  the program and are shown even when the drive is DISCONNECTED -
+  pick with your eyes while the shelf sits in a drawer. A
+  background worker fills them in by itself without disturbing
+  you. Opening the original without the drive - the program
+  politely asks to connect the shelf.
+
+OPEN IN YOUR OWN EDITOR (new in v1.0)
+
+  Right-click a result - "Open with ..." opens the file in your
+  favourite editor (Photoshop, Corel, even Paint). You define
+  the list yourself: "Add/edit editors..." opens a simple
+  settings file with an example and an explanation. The program
+  never edits anything itself - it only hands the file over;
+  your originals are never touched.
 
 HOW TO GET PHOTOS OFF YOUR PHONE
 
@@ -147,6 +186,8 @@ DUPLICATES
   archive twice (checked by content, not by name). If there are
   many duplicates, the program will suggest running our family
   duplicate tool Smart Duplicate Finder first, then organizing.
+  Right after indexing you get a copies ESTIMATE (by identical
+  size) - the best moment to clean up is BEFORE moving day.
 
 WHERE THE PROGRAM KEEPS ITS DATA
 

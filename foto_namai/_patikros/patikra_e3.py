@@ -87,6 +87,26 @@ def main():
         z = win._zurnalas.toPlainText()
         chk("ind2_nepakite", "67 nepakite" in z, z[-300:])
 
+        # --- KLIURKA 12 (Roberto radinys 2026-08-23): krikstynu laukas
+        # anksciau leisdavo suvesti kiek nori, o programa TYLIAI nukirpdavo
+        # iki 40. Dabar riba kieta - 41-as zenklas nebesiveda. Tikrinam
+        # dialoga NEPALEIDE modalinio lango (paruosti_* atskirta nuo exec).
+        from PyQt6.QtWidgets import QLineEdit
+
+        import models
+        dlg = gui_langas.paruosti_vardo_dialoga(
+            win, "Krikstynos", "Vardas:", "Siulymas")
+        laukas = dlg.findChild(QLineEdit)
+        chk("krikstynu_laukas_yra", laukas is not None)
+        if laukas is not None:
+            chk("krikstynu_riba", laukas.maxLength() == 40, laukas.maxLength())
+            laukas.setText("x" * 100)          # meska deda 100 - tilpti turi 40
+            chk("krikstynu_nesiveda_daugiau", len(laukas.text()) == 40,
+                len(laukas.text()))
+        chk("krikstynu_riba_is_models", models.LENTYNOS_VARDO_RIBA == 40,
+            models.LENTYNOS_VARDO_RIBA)
+        dlg.deleteLater()
+
         win.close()
 
     if KLAIDOS:

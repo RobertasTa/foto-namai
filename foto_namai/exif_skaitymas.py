@@ -12,6 +12,7 @@ OKF_Pillow/OKF_piexif guard'u taisykles:
 Zero Qt. Originalu EXIF NIEKADA nerasom (v1 principas).
 """
 
+import re
 from datetime import datetime
 
 from PIL import ExifTags, Image
@@ -27,9 +28,51 @@ _MAKE = 271
 _MODEL = 272
 _ORIENTACIJA = 274
 
-_TUSCIA = {"exif_iso": None, "turi_kameros_exif": False, "kamera": None,
+_TUSCIA = {"exif_iso": None, "exif_kita_iso": None,
+           "turi_kameros_exif": False, "kamera": None,
            "plotis": None, "aukstis": None, "orientacija": None,
            "lat": None, "lon": None, "blob": None}
+
+
+_PNG_XMP_DATOS = re.compile(
+    r'(?:photoshop:DateCreated|xmp:CreateDate|exif:DateTimeOriginal|'
+    r'xmp:ModifyDate|tiff:DateTime)\s*(?:=\s*"|>)\s*'
+    r'(\d{4})-(\d{2})-(\d{2})')
+
+
+def _png_data_iso(info):
+    """PNG vidiniai laukai (4e p. 6+11 verdiktas 2026-08-28): 'Creation
+    Time' tEXt ir XMP paketas iTXt viduje. Tikro archyvo matavimas: ~390
+    failu, del kuriu kitaip butu reikeje ExifTool priklausomybes.
+    Grazina ISO arba None; rezis 1990-2035 kaip visur."""
+    v = info.get("Creation Time")
+    if isinstance(v, bytes):
+        v = v.decode("latin1", "ignore")
+    if isinstance(v, str) and v.strip():
+        v = v.strip()
+        # ISO/EXIF stiliai + PNG spec rekomenduojamas RFC 1123
+        for pj, fmt in ((v[:19], "%Y-%m-%d %H:%M:%S"),
+                        (v[:19], "%Y:%m:%d %H:%M:%S"),
+                        (v[:10], "%Y-%m-%d"),
+                        (v, "%d %B %Y %H:%M:%S %z"),
+                        (v, "%d %B %Y %H:%M:%S"),
+                        (v, "%d %b %Y %H:%M:%S")):
+            try:
+                dt = datetime.strptime(pj, fmt)
+                if 1990 <= dt.year <= 2035:
+                    return dt.replace(tzinfo=None).isoformat()
+            except ValueError:
+                continue
+    x = info.get("XML:com.adobe.xmp")
+    if isinstance(x, bytes):
+        x = x.decode("utf-8", "replace")
+    if isinstance(x, str):
+        m = _PNG_XMP_DATOS.search(x)
+        if m:
+            y, mo, dy = int(m.group(1)), int(m.group(2)), int(m.group(3))
+            if 1990 <= y <= 2035 and 1 <= mo <= 12 and 1 <= dy <= 31:
+                return "%04d-%02d-%02dT00:00:00" % (y, mo, dy)
+    return None
 
 
 def _data_iso(reiksme):
@@ -81,9 +124,17 @@ def skaityti(kelias):
                             dalys.append(x)
                     rez["kamera"] = " ".join(dalys) or None
                 rez["orientacija"] = exif.get(_ORIENTACIJA)
+                ifd = exif.get_ifd(ExifTags.IFD.Exif)
                 rez["exif_iso"] = _data_iso(
-                    exif.get_ifd(ExifTags.IFD.Exif).get(
-                        ExifTags.Base.DateTimeOriginal))
+                    ifd.get(ExifTags.Base.DateTimeOriginal))
+                if rez["exif_iso"] is None:
+                    # L0b (4e, matavimas 08-27 +4): atsargines EXIF datos,
+                    # kai DateTimeOriginal nera - Digitized, tada DateTime
+                    # (306, ModifyDate). Kur ideti hierarchijoje, sprendzia
+                    # datos_variklis.isspresti_data (po vardo).
+                    rez["exif_kita_iso"] = (
+                        _data_iso(ifd.get(ExifTags.Base.DateTimeDigitized))
+                        or _data_iso(exif.get(306)))
                 gps = exif.get_ifd(ExifTags.IFD.GPSInfo)
                 if gps and 2 in gps and 4 in gps:
                     try:
@@ -94,6 +145,16 @@ def skaityti(kelias):
                         pass
             except Exception:
                 pass   # sugadintas EXIF - matmenys lieka, datos kris zemyn
+            # PNG sluoksnis: kai EXIF datu nera, o failas PNG - vidiniai
+            # tekstiniai laukai (ta pati exif_kita_iso vieta hierarchijoje:
+            # "kiti failo VIDINIAI metaduomenys", po vardo).
+            try:
+                if (rez["exif_iso"] is None
+                        and rez["exif_kita_iso"] is None
+                        and img.format == "PNG"):
+                    rez["exif_kita_iso"] = _png_data_iso(img.info)
+            except Exception:
+                pass
     except Exception:
         pass   # neatidaromas failas - viskas None, skambintojas zymes
     return rez

@@ -22,7 +22,10 @@ from PIL import Image, ImageOps
 import exif_skaitymas  # noqa: F401  (salutinis efektas: pillow-heif registracija)
 import saugykla
 
-DYDIS = 192   # kvadrato, i kuri telpa miniatiura, krastine px
+DYDIS = 256   # kvadrato krastine px; 192->256 2026-08-29 (spr. 45
+              # kartoteka: pamatuota ant 300 tikru foto - 6,8 KB/vnt,
+              # atpazinimas akimi + HiDPI nusvere; senas 192 failu kesas
+              # tiesiog regeneruosis, nes DYDIS yra keso rakte)
 
 
 def keso_katalogas():

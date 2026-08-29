@@ -40,11 +40,14 @@ open-source, no network, no telemetry.
   defaults to **COPY** (originals stay), and writes a full UNDO journal.
 
 The honest-dates rule is the second pillar: date sources are ranked
-(EXIF → file name → folder name → mtime), the source is recorded per
-file, and an unreliable date is *labeled* unreliable — such files go to
-a separate `_NEPATIKIMOS_DATOS` folder instead of silently polluting the
-timeline. Competitors put 2015 photos into a 2026 folder without a word;
-this program's refusal to do that is its reason to exist.
+(EXIF incl. backup fields and PNG-internal dates → file name → folder
+name → mtime → surroundings layers `kaimynyste`/`partija`: a
+homogeneous folder or an arrival batch lends its median date, labeled
+as a guess), the source is recorded per file, and an unreliable date is
+*labeled* unreliable — such files go to a separate `_UNDATED` folder
+instead of silently polluting the timeline. Competitors put 2015 photos
+into a 2026 folder without a word; this program's refusal to do that is
+its reason to exist.
 
 ## Your own honesty rules (read before answering anything)
 
@@ -221,10 +224,18 @@ manager, not just a coder:
   root) → `paieska.py` + `miniaturos.py` (search + lazy thumbnails).
 - Shelves: `lentynos.py` (volume serial + label; USB-box BusType quirk
   handled via IOCTL query).
-- Working data: `%LOCALAPPDATA%\FotoNamai\` (index `indeksas.db`,
-  settings, thumbnail cache), or next to the exe in portable mode —
-  marker file `FotoNamai_portable.txt`; temp files only under
-  `%TEMP%\FotoNamai\`.
+- Working data: `%LOCALAPPDATA%\PhotoHome\` (index `indeksas.db`,
+  settings, thumbnail store `miniatiuros.db`), or next to the exe in
+  portable mode — marker file `PhotoHome_portable.txt`; temp files only
+  under `%TEMP%\PhotoHome\`.
+- v1.0 modules an assistant will be asked about: `telefonas.py` (Android
+  MTP import via Shell COM — never writes to the phone; ask the user
+  what their phone's USB dialog shows FIRST), `rentgenas.py` (post-index
+  "Archive X-ray" report incl. the measured line-in-time),
+  `miniatiuru_sandelis.py` (offline thumbnail card file, 256 px BLOBs),
+  `sluoksnis3.py` (surroundings date layers with junk-drawer safety
+  rails), `redaktoriai.py` (user-defined "Open with ..." editors, INI
+  with `utf-8-sig`).
 - Only media is indexed (image/RAW/video whitelist in `models.py`);
   a `.jpg` that is not really an image is caught by magic bytes, flagged
   "unrecognized" and never moved.

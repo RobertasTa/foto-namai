@@ -10,6 +10,7 @@ patikrinta teiseju patikra_e2.py (45/45) ir Claude perziura.
 
 import re
 import calendar
+from datetime import datetime
 
 
 def _validate_date(year, month, day):
@@ -65,8 +66,9 @@ def data_is_vardo(vardas):
             else:
                 return _format_iso(y, mo, dy)
 
-    # 4. Bendras: YYYYMMDD_HHMMSS bet kur varde
-    m = re.search(r'(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})', vardas)
+    # 4. Bendras: YYYYMMDD_HHMMSS bet kur varde ([_-] skirtukas: Huawei
+    #    Health raso sporthealth-1-20201015-060701; matavimas 08-27 +3)
+    m = re.search(r'(\d{4})(\d{2})(\d{2})[_-](\d{2})(\d{2})(\d{2})', vardas)
     if m:
         y, mo, dy = int(m.group(1)), int(m.group(2)), int(m.group(3))
         h, mi, s = int(m.group(4)), int(m.group(5)), int(m.group(6))
@@ -82,6 +84,20 @@ def data_is_vardo(vardas):
         y, mo, dy = int(m.group(1)), int(m.group(2)), int(m.group(3))
         if _validate_date(y, mo, dy):
             return _format_iso(y, mo, dy)
+
+    # 6. Unix ms laiko zyme: lygiai 13 skaitmenu (1564686877912.jpg,
+    #    1775113451563_100.JPG - sensoriu/programu vardai). Rezis
+    #    1990-01-01..2036-01-01 ms atmeta atsitiktinius ilgus skaicius
+    #    (PLANAS 4e p. 1; matavimas 2026-08-27: 18/18 sutapo su EXIF/mtime).
+    m = re.search(r'(?<!\d)(\d{13})(?!\d)', vardas)
+    if m:
+        v = int(m.group(1))
+        if 631152000000 <= v < 2082758400000:
+            try:
+                return datetime.fromtimestamp(v / 1000).strftime(
+                    "%Y-%m-%dT%H:%M:%S")
+            except (OSError, OverflowError, ValueError):
+                pass
 
     return None
 
@@ -108,6 +124,21 @@ def data_is_aplanko(aplanko_kelias):
                     if 1990 <= year <= 2035:
                         return (year, mval, None)
 
+        # (a0) Pilna data YYYY[-_.]MM[[-_.]DD] viename segmente. Butina
+        #      PRIES (a): pabraukimai yra \w, todel \b riba ju nemato -
+        #      "2007_03_23" (Roberto gyvas aplankas, radinys 08-28)
+        #      likdavo visai neatpazintas, o "2007-03-23" dienos likutis
+        #      "-23" tapdavo renginio ETIKETE. Diena tik isvalymui.
+        m = re.search(r'(?<!\d)(\d{4})[-_.](\d{1,2})(?:[-_.](\d{1,2}))?(?!\d)',
+                      seg)
+        if m:
+            year, month = int(m.group(1)), int(m.group(2))
+            day = int(m.group(3)) if m.group(3) else None
+            if (1990 <= year <= 2035 and 1 <= month <= 12
+                    and (day is None or 1 <= day <= 31)):
+                label = seg.replace(m.group(0), '', 1).strip()
+                return (year, month, label or None)
+
         # (a) Ieskoti YYYY-MM pora
         ymm_m = re.search(r'\b(\d{4})-(\d{2})\b', seg)
         if ymm_m:
@@ -127,10 +158,16 @@ def data_is_aplanko(aplanko_kelias):
     return None
 
 
-def isspresti_data(exif_iso, failo_vardas, aplanko_kelias, mtime_iso):
+def isspresti_data(exif_iso, failo_vardas, aplanko_kelias, mtime_iso,
+                   exif_kita_iso=None):
     """
-    Hierarchinis datos sprendimas: EXIF -> vardas -> aplankas -> mtime.
-    Grazina (datetaken_iso, saltinis, patikima).
+    Hierarchinis datos sprendimas: EXIF -> vardas -> EXIF atsargines
+    datos -> aplankas -> mtime. Grazina (datetaken_iso, saltinis, patikima).
+
+    exif_kita_iso (4e L0b, 2026-08-28): DateTimeDigitized/DateTime, kai
+    DateTimeOriginal nera. Eina PO vardo, nes DateTime (ModifyDate) gali
+    buti taisymo, ne fotografavimo data - stiprus vardo sablonas laimi;
+    saltinis "exif_kita", patikima True (samoningai irasyta zyme).
     """
     # 1. EXIF
     if exif_iso is not None:
@@ -140,6 +177,10 @@ def isspresti_data(exif_iso, failo_vardas, aplanko_kelias, mtime_iso):
     vard_result = data_is_vardo(failo_vardas)
     if vard_result is not None:
         return (vard_result, "vardas", True)
+
+    # 2b. EXIF atsargines datos (L0b)
+    if exif_kita_iso is not None:
+        return (exif_kita_iso, "exif_kita", True)
 
     # 3. Aplankas
     apl_result = data_is_aplanko(aplanko_kelias)

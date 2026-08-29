@@ -9,11 +9,13 @@ failai NEJUDINAMI (sprendimas 28); Live poros keliauja kartu (spr. 17).
 Zero Qt - GUI worker'iai si moduli tik apvynios.
 """
 
+import os
 import shutil
 from datetime import datetime
 from pathlib import Path, PureWindowsPath
 
 import hashai
+import models
 from indeksavimas import DiskoSargoKlaida, _disko_sargas
 
 _FOTO_TIPAI = ("foto", "dokumentas")
@@ -52,9 +54,21 @@ def _tikslo_grupe(datetaken, patikima, tipas, etikete):
     if tipas == "neatpazintas":
         return None
     if tipas == "skrinsotas":
-        return "_SKRINSOTAI"
+        # KLIURKA 23 (Roberto gyvas ratas 2026-08-25 su TIKRAIS duomenimis):
+        # jo Pictures kataloge buvo 6869 skrinsotai ir VISI nuejo i VIENA
+        # ploksti aplanka - Explorer ji atidaro letai, o zmogui jis bevertis.
+        # Anksciau to nesimate, nes testuose skrinsotu buvo 16-21.
+        # Ta pati Metai\Menuo taisykle kaip nuotraukoms - kad vartotojui
+        # NEREIKETU mokytis dvieju logiku. Etikete skrinsotams netaikoma
+        # (ji butu "Screenshots" is aplanko vardo - beverte).
+        # Be patikimos datos - lieka _SCREENSHOTS saknyje (be naujo
+        # "_UNDATED po _SCREENSHOTS", kad nebutu dvieju _UNDATED archyve).
+        if datetaken and patikima:
+            return "%s\\%s\\%s" % (models.GRUPE_SKRINSOTAI,
+                                   datetaken[:4], datetaken[5:7])
+        return models.GRUPE_SKRINSOTAI
     if not datetaken or not patikima:
-        return "_NEPATIKIMOS_DATOS"
+        return models.GRUPE_NEPATIKIMOS
     metai, menuo = datetaken[:4], datetaken[5:7]
     if etikete:
         return "%s\\%s %s" % (metai, menuo, etikete)
@@ -171,9 +185,16 @@ def vykdyti(con, db_kelias, tikslo_saknis, rezimas="kopijuoti", stop=None,
     while True:
         if stop is not None and stop():
             break
+        # 4e p. 3 (2026-08-28): patikimos datos failai vykdomi PIRMI, tad
+        # is vienodo hash kopiju i archyva keliauja ta, kurios data
+        # patikimesne (pvz. su EXIF), o ne atsitiktine indeksavimo eiles
+        # pirmoji - plikoji kopija be reikalo nebeguldo failo i _UNDATED.
+        # Spr. 44 langas nesikeicia: zmogus vis tiek ispejamas ir gali
+        # sustoti; cia tik KURI kopija imama jam paspaudus "Testi".
         partija = con.execute(
             "SELECT id, saltinio_saknis, santykinis_kelias, tikslo_kelias,"
-            " hash FROM failai WHERE busena='SUPLANUOTAS' LIMIT ?",
+            " hash FROM failai WHERE busena='SUPLANUOTAS'"
+            " ORDER BY patikima_data DESC, id LIMIT ?",
             (partijos_dydis,)).fetchall()
         if not partija:
             break
@@ -189,6 +210,18 @@ def vykdyti(con, db_kelias, tikslo_saknis, rezimas="kopijuoti", stop=None,
                                             fid))
                 stat["klaidos"] += 1
                 continue
+            # Spr. 27 patikslinimas (2026-08-29): hash GARANTUOJAMAS cia.
+            # A pakopa jo nebeskaiciuoja (rentgenas greitas), A2 fonas
+            # apskaiciuoja vaizdams; ko dar nera - apskaiciuojam DABAR is
+            # saltinio ir irasom i indeksa (kad kitas seansas / zinomi_hash
+            # ji rastu). Perkelimo sauga nesusilpneja NE PER BAITA.
+            if h is None:
+                try:
+                    h = hashai.failo_hash(src)
+                    con.execute("UPDATE failai SET hash=? WHERE id=?",
+                                (h, fid))
+                except OSError:
+                    h = None      # neperskaitomas - guldom be dubliu saugos
             if h and h in zinomi_hash:
                 con.execute("UPDATE failai SET busena='PRALEISTAS',"
                             " aprasas=? WHERE id=?",
@@ -272,4 +305,69 @@ def atstatyti(con, stop=None, progress=None):
         if progress is not None and stat["atstatyta"] % 200 == 0:
             progress(dict(stat))
     con.commit()
+
+    # KLIURKA 14 (Roberto gyvas ratas 2026-08-23): UNDO grazindavo failus
+    # i vieta DISKE, bet indekse palikdavo juos "panaudotus" - visi likdavo
+    # ATSTATYTAS/PRALEISTAS, o planas ima tik SUINDEKSUOTAS. Rezultatas:
+    # zmogus, pasinaudojes UNDO, nebegalejo tvarkyti tu paciu nuotrauku
+    # ("Nothing to organize", nors indekse 991 failas), o perindeksavimas
+    # nepadeda - failai diske nepakite, tad skeneris teisingai sako
+    # "991 unchanged". UNDO pazadas yra "grazinti VISKA atgal" - taip pat
+    # ir programos galva, ne tik failus. ATSTATYTAS yra IVYKIS, ne busena;
+    # istorija lieka undo lenteleje ir seansuose.
+    # Grazinam TIK tada, kai zurnalas isvalytas iki galo (nutrauktas UNDO
+    # palieka busenas ramybeje - kita sesija tesia).
+    if not con.execute("SELECT 1 FROM undo WHERE atstatyta=0"
+                       " LIMIT 1").fetchone():
+        con.execute(
+            "UPDATE failai SET busena='SUINDEKSUOTAS', tikslo_kelias=NULL"
+            " WHERE busena IN ('ATSTATYTAS','PRALEISTAS','SUPLANUOTAS',"
+            " 'KLAIDA')")
+        con.commit()
+        _isvalyti_tuscius(con)
     return stat
+
+
+def _isvalyti_tuscius(con):
+    """KLIURKA 15 (Roberto akys 2026-08-23: "katalogai yra, bet failu te
+    nera"): po UNDO failai isnesami teisingai, bet lieka stoveti tuscias
+    karkasas - 2017..2026 su visais menesiais, _SCREENSHOTS, _UNDATED.
+    "Grazinti viska atgal" reiskia ir tai.
+
+    SAUGIKLIAI (trynimas - pavojingiausias veiksmas programoje):
+    - liecia TIK tuos katalogus, kuriuos PATI programa sukure - t. y.
+      undo zurnalo tikslu tevus (ir ju tevus iki archyvo saknies).
+      Zmogaus aplankas, buves archyve iki tvarkymo, NELIECIAMAS -
+      pirma sio saugiklio versija ejo os.walk per visa archyva ir
+      istrynė sveitima tuscia aplanka (pagavo patikra pries priimant);
+    - salina tik TUSCIUS katalogus (rmdir, ne rmtree - jei kas viduje,
+      OSError ir katalogas lieka);
+    - archyvo saknies NELIECIA (ten KAIP_SUTVARKYTA.md ir zurnalas);
+    - jokiu klaidu nekelia: nepavyko istrinti - paliekam ramybeje.
+    """
+    keliai = [k for (k,) in con.execute(
+        "SELECT i_kur FROM undo WHERE i_kur IS NOT NULL") if k]
+    if len(keliai) < 2:
+        return 0
+    try:
+        saknis = Path(os.path.commonpath(keliai))
+    except (ValueError, OSError):
+        return 0                      # skirtingi diskai ir pan.
+    if not saknis.is_dir():
+        return 0
+    # MUSU katalogai: kiekvieno tikslo tevai iki saknies (jos neitraukiant)
+    musu = set()
+    for k in keliai:
+        p = Path(k).parent
+        while p != saknis and saknis in p.parents:
+            musu.add(p)
+            p = p.parent
+    istrinta = 0
+    # Nuo giliausiu i virsu, kad istustejes tevas irgi kristu
+    for p in sorted(musu, key=lambda x: len(x.parts), reverse=True):
+        try:
+            p.rmdir()                 # netuscias -> OSError, paliekam
+            istrinta += 1
+        except OSError:
+            pass
+    return istrinta

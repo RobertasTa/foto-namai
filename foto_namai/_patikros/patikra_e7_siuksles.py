@@ -106,8 +106,9 @@ def main():
                           ).fetchone()[0]
         chk("kameru migracija nukirpo NUL uodega",
             kam == "Canon Canon EOS 400D DIGITAL", repr(kam))
-        chk("user_version=3 (visos migracijos)",
-            con.execute("PRAGMA user_version").fetchone()[0] == 3)
+        # 4 = pridejus _migracija_keliai (kliurka 24, 2026-08-25)
+        chk("user_version=4 (visos migracijos)",
+            con.execute("PRAGMA user_version").fetchone()[0] == 4)
         chk("migraciju skaitliukas >= 3",
             indeksas.pasiimti_migraciju_valymus() >= 3)
         con.close()

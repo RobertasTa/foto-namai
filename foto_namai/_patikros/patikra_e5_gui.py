@@ -121,9 +121,14 @@ def main():
         chk("p_info", str(viso_db) in win._p_info.text(),
             win._p_info.text())
 
-        # --- miniatiuru kesas atsirado (tikri jpg poligone yra) ---
-        kesas = list((Path(tmp) / "data" / "miniatiuros").glob("*.jpg"))
-        chk("miniatiuros", len(kesas) >= 10, len(kesas))
+        # --- miniatiuros KARTOTEKOS SANDELYJE (spr. 45, 2026-08-29:
+        # nebe failu kesas, o miniatiuros.db - rodymas pildo kartoteka) ---
+        import miniatiuru_sandelis as msand
+        sand_db = Path(tmp) / "data" / "miniatiuros.db"
+        chk("sandelis_yra", sand_db.exists(), sand_db)
+        sand = msand.atidaryti(sand_db)
+        chk("miniatiuros", msand.kiek(sand) >= 10, msand.kiek(sand))
+        sand.close()
 
         # --- rikiavimas: pirmas rezultatas turi data, be datos - gale ---
         pirmas = win._rezultatai.item(0).data(gui_langas._KELIO_ROLE)
@@ -195,6 +200,17 @@ def main():
             "Sveiki sugrize" in win2._zurnalas.toPlainText(),
             win2._zurnalas.toPlainText()[:200])
         win2.close()
+
+        # --- Quick start takas pirmame ekrane (4f p. 4): tuscias
+        # indeksas -> trys zingsniai + "ne baito" pazadas ---
+        win3 = gui_langas.MainWindow(
+            db_kelias=Path(tmp) / "sviezia" / "i.db", testinis=True)
+        qs = win3._zurnalas.toPlainText()
+        for z in ("Pirmas kartas", "RENTGENA", "UNDO", "PAZADAS",
+                  "ne vienas baitas"):
+            chk("quick_start: " + z, z in qs, qs[:200])
+        chk("quick_start_be_sveiki", "Sveiki sugrize" not in qs)
+        win3.close()
 
     if KLAIDOS:
         for k in KLAIDOS:

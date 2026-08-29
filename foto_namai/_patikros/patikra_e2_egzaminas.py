@@ -58,12 +58,18 @@ def main():
               % (stat["indeksuota"], stat["nepakite_praleista"],
                  stat["neatpazinta"], len(stat["praleista"])))
 
+        # KLIURKA 24 (2026-08-25): santykinis kelias indekse dabar
+        # skaiciuojamas nuo LENTYNOS (tomo) saknies, ne nuo saltinio -
+        # todel cia ta pati atskaita, o ne plikas vardas poligone.
+        atskaita = indeksavimas.atskaitos_saknis(SAVARTYNAS)
+        pref = Path(SAVARTYNAS).relative_to(atskaita)
+
         gerai = 0
         for vardas, laukta_data, saltinio_tekstas in tiesa:
             eil = con.execute(
                 "SELECT datetaken, datos_saltinis, patikima_data, hash"
                 " FROM failai WHERE lentyna_id=? AND santykinis_kelias=?",
-                (lid, vardas)).fetchone()
+                (lid, str(pref / vardas))).fetchone()
             if eil is None:
                 klaidos.append("NERASTA indekse: %s" % vardas)
                 continue
@@ -93,16 +99,20 @@ def main():
                 continue
             gerai += 1
 
-        # Dublikatu poros: tas pats turinys -> tas pats hash (sprendimas 27a)
+        # Spr. 27 patikslinimas (2026-08-29): A pakopa hash NEBESKAICIUOJA
+        # (visas turinys nebeskaitomas - NAS greitis). Tikrinam, kad PO
+        # indeksavimo hash tikrai NULL - jei kas nors hash grazintu i A
+        # pakopa, greicio regresija butu pagauta cia. Dubliu gaudyma
+        # vykdymo metu (hash garantija) tikrina patikra_e6/patikra_e4_gui.
         for i in range(4):
-            orig = con.execute(
-                "SELECT hash FROM failai WHERE santykinis_kelias=?",
-                ("DSC_9%03d.JPG" % i,)).fetchone()
-            kop = con.execute(
-                "SELECT hash FROM failai WHERE santykinis_kelias=?",
-                ("Senas telefonas\\DSC_9%03d - Copy.JPG" % i,)).fetchone()
-            if not (orig and kop and orig[0] and orig[0] == kop[0]):
-                klaidos.append("dublio pora %d: hash nesutampa" % i)
+            for kelias in ("DSC_9%03d.JPG" % i,
+                           "Senas telefonas\\DSC_9%03d - Copy.JPG" % i):
+                eil = con.execute(
+                    "SELECT hash FROM failai WHERE santykinis_kelias=?",
+                    (str(pref / kelias),)).fetchone()
+                if not eil or eil[0] is not None:
+                    klaidos.append("A pakopoje hash turi buti NULL: %s"
+                                   % kelias)
 
         con.close()
 

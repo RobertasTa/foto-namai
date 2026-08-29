@@ -19,7 +19,7 @@ from datetime import date
 from pathlib import Path
 
 from PyQt6.QtCore import QSize, Qt, QThread, QTimer
-from PyQt6.QtGui import QColor, QIcon, QPainter, QPixmap
+from PyQt6.QtGui import QColor, QFont, QIcon, QPainter, QPixmap
 from PyQt6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog,
                              QDialogButtonBox, QFileDialog, QFrame,
                              QHBoxLayout, QHeaderView,
@@ -35,6 +35,7 @@ import lentynos
 import miniaturos
 import models
 import paieska
+import redaktoriai
 import saugykla
 import stilius
 import worker as workeriai
@@ -42,6 +43,82 @@ from kalba import kiekio_zodis, saltinio_zodis, t
 
 _KELIO_ROLE = Qt.ItemDataRole.UserRole
 _IVERCIO_ROLE = Qt.ItemDataRole.UserRole + 1
+
+
+# KLIURKA 17 (Roberto laptopo ratas 2026-08-25): Qt STANDARTINIU mygtuku
+# teksta duoda pats Qt, o lietuvisku Qt vertimu pakete NERA - lietuviskuose
+# languose kabojo "Close", "OK", "Cancel", "Yes", "No". Rasta 5 vietose is
+# karto, todel vaistas VIENAS visiems, ne lopas kiekvienam dialogui.
+# (Ta pati klaida gyvena ir SDF v1.4 - seimos spraga.)
+# "OK" SAMONINGAI NEVERCIAM: QMessageBox.warning/.information yra STATINIAI
+# metodai, ju mygtuko nepasieksim nekeiciant i instancinius (dar 4 vietos).
+# Isvertus tik cia gautusi "Gerai" viename lange ir "OK" keturiuose - tai
+# butu nenuoseklumas vietoj pataisymo. "OK" tarptautinis, "Close"/"Yes" - ne.
+_MYGTUKU_RAKTAI = {
+    "Cancel": "Atsaukti",
+    "Close": "Uzdaryti",
+    "Yes": "Taip",
+    "No": "Ne",
+}
+
+
+def isversti_mygtukus(deze):
+    """Isverciam VISUS standartinius mygtukus dezeje (QDialogButtonBox arba
+    QMessageBox). Nezinomus paliekam kaip yra.
+
+    DEMESIO: QMessageBox.button() ir QDialogButtonBox.button() reikalauja
+    SAVO enum'o - reiksmes sutampa, bet PyQt6 tipai skirtingi ir svetimas
+    enum'as meta TypeError. Todel zodyne laikom VARDUS, o enum'a imam pagal
+    dezes tipa (pagauta patikros 2026-08-25 - butu sulauzę visus klausti()
+    dialogus: UNDO, perziura, archyvo kurimas)."""
+    enumas = (QMessageBox.StandardButton if isinstance(deze, QMessageBox)
+              else QDialogButtonBox.StandardButton)
+    for vardas, raktas in _MYGTUKU_RAKTAI.items():
+        btn = deze.button(getattr(enumas, vardas))
+        if btn is not None:
+            btn.setText(t(raktas))
+    return deze
+
+
+def klausti(tevas, antraste, tekstas, numatytasis_taip=True):
+    """QMessageBox.question pakaitalas su ISVERSTAIS mygtukais.
+    Grazina True, jei zmogus paspaude "Taip"."""
+    dlg = QMessageBox(tevas)
+    dlg.setIcon(QMessageBox.Icon.Question)
+    dlg.setWindowTitle(antraste)
+    dlg.setText(tekstas)
+    dlg.setStandardButtons(QMessageBox.StandardButton.Yes
+                           | QMessageBox.StandardButton.No)
+    dlg.setDefaultButton(QMessageBox.StandardButton.Yes if numatytasis_taip
+                         else QMessageBox.StandardButton.No)
+    isversti_mygtukus(dlg)
+    return dlg.exec() == QMessageBox.StandardButton.Yes
+
+
+def paruosti_vardo_dialoga(tevas, antraste, paaiskinimas, siulymas,
+                           riba=models.LENTYNOS_VARDO_RIBA):
+    """Krikstynu dialogas su KIETA riba lauke (KLIURKA 12, Roberto radinys
+    ir jo sprendimas 2026-08-23): anksciau laukas leisdavo rasyti kiek nori,
+    o programa TYLIAI nukirpdavo iki 40 - tas pats tylus perrasymas, kuri
+    prikisame konkurentams. Dabar 41-as zenklas paprasciausiai nebesiveda:
+    zmogus tai pajunta pirstais, be jokio papildomo langelio.
+    Atskirta nuo exec() todel, kad patikra galetu patikrinti riba
+    nepaleisdama modalinio lango."""
+    dlg = QInputDialog(tevas)
+    dlg.setWindowTitle(antraste)
+    dlg.setLabelText(paaiskinimas)
+    dlg.setTextValue(siulymas)          # laukas gimsta cia - tik po to findChild
+    laukas = dlg.findChild(QLineEdit)
+    if laukas is not None:
+        laukas.setMaxLength(riba)
+    return dlg
+
+
+def klausti_vardo(tevas, antraste, paaiskinimas, siulymas):
+    """Grazina (tekstas, ok) - toks pat kontraktas kaip QInputDialog.getText."""
+    dlg = paruosti_vardo_dialoga(tevas, antraste, paaiskinimas, siulymas)
+    ok = dlg.exec() == QDialog.DialogCode.Accepted
+    return dlg.textValue(), ok
 
 
 class PasiulymuDialogas(QDialog):
@@ -70,14 +147,14 @@ class PasiulymuDialogas(QDialog):
             self._lentele.setItem(
                 i, 1, QTableWidgetItem(str(g["failai"])))
             self._lentele.setItem(
-                i, 2, QTableWidgetItem("%.2f MB" % (g["baitai"] / 1048576.0)))
+                i, 2, QTableWidgetItem(models.dydis_tekstu(g["baitai"])))
         stulpas.addWidget(self._lentele)
         self._perkelti = QCheckBox(
             t("Perkelti vietoj kopijuoti (originalai isnyks is saltiniu)"))
         stulpas.addWidget(self._perkelti)
-        mygtukai = QDialogButtonBox(
+        mygtukai = isversti_mygtukus(QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok
-            | QDialogButtonBox.StandardButton.Cancel)
+            | QDialogButtonBox.StandardButton.Cancel))
         mygtukai.accepted.connect(self.accept)
         mygtukai.rejected.connect(self.reject)
         stulpas.addWidget(mygtukai)
@@ -146,11 +223,19 @@ class MainWindow(QMainWindow):
                            else saugykla.data_dir() / "indeksas.db")
         self._thread = None
         self._worker = None
+        # Spr. 45 KARTOTEKOS FONAS - atskiras slot'as, kad paieskos/skenai
+        # jo nelauktu (pyqt6_threading_guard receptas galioja ir jam)
+        self._fono_thread = None
+        self._fono_worker = None
         self._sekundes = 0
         self._darbo_tekstas = ""
         self._laikrodis = QTimer(self)
         self._laikrodis.setInterval(1000)
         self._laikrodis.timeout.connect(self._tiksi)
+        # Kartotekos fonas startuoja pats, kai langas jau gyvas (5 s) -
+        # tik jei indeksas egzistuoja; testiniame rezime nelenda
+        if not testinis:
+            QTimer.singleShot(5000, self._fonas_start)
 
         self.setWindowTitle("PHOTO home")
         # Ikona - GPT draugo piesinys 2026-08-07 (_darbal\ikonos, gamyba
@@ -270,12 +355,38 @@ class MainWindow(QMainWindow):
         # Kalba gyvena skirtuku eiluteje (enum pilnu keliu - OKF guard)
         self._tabs.setCornerWidget(self._cmb_kalba,
                                    Qt.Corner.TopRightCorner)
-        stulpas.addWidget(self._tabs, stretch=5)
-
-        stulpas.addWidget(QLabel(t("Zurnalas:")))
+        # Zurnalas po skirtukais TEMPIAMAS uz krasto (Roberto gyvas demo
+        # 2026-08-29: "gal galima pele uz krasto paemus zurnala
+        # susimazinti? kad daugiau vietos miniatiuroms") - QSplitter
+        from PyQt6.QtWidgets import QSplitter
         self._zurnalas = QPlainTextEdit()
         self._zurnalas.setReadOnly(True)
-        stulpas.addWidget(self._zurnalas, stretch=2)
+        apacia = QWidget()
+        ap_stulpas = QVBoxLayout(apacia)
+        ap_stulpas.setContentsMargins(0, 0, 0, 0)
+        ap_stulpas.addWidget(QLabel(t("Zurnalas:")))
+        ap_stulpas.addWidget(self._zurnalas)
+        spl = QSplitter(Qt.Orientation.Vertical)
+        spl.addWidget(self._tabs)
+        spl.addWidget(apacia)
+        spl.setStretchFactor(0, 5)
+        spl.setStretchFactor(1, 1)
+        spl.setCollapsible(0, False)   # skirtuku nesuploji netycia
+        # Rankenele APCIUOPIAMA (Roberto demo 2 pastaba: "pele ant ribos
+        # uzvedi - zenkliukas atsiranda"): storesne + matoma juostele
+        # Rankenele RYSKI (Roberto demo 2026-08-29: "kaip Excel'yje -
+        # pele ant ribos uzvedi ir tempi"): per visa ploti, "grip"
+        # taskeliai centre, uzvedus - paryskeja (Qt kursoriu i SplitV
+        # keicia pats). Ankstesnis margin 40% ja pasleps subtiliai.
+        spl.setHandleWidth(10)
+        spl.setStyleSheet(
+            "QSplitter::handle:vertical {"
+            " background: #d7dce8;"
+            " border-top: 1px solid #b3bcd0;"
+            " border-bottom: 1px solid #b3bcd0;"
+            " image: none; }"
+            "QSplitter::handle:vertical:hover { background: #aab6d4; }")
+        stulpas.addWidget(spl, stretch=7)
 
         # Statuso juosta lango apacioje (Roberto pastaba 2026-08-07:
         # progresas mygtuku eiluteje nusikirpdavo; cia visas plotis ir
@@ -329,7 +440,7 @@ class MainWindow(QMainWindow):
         b.setMenu(meniu)
         return b
 
-    def _on_klausk_di(self):
+    def _on_klausk_di(self, klausimas=None):
         """Atidaro claude.ai su paruostu promptu (Roberto ideja
         2026-08-08): programa rase Claude, tad claude.ai atsakys
         tiksliausiai - variklis tas pats. claude.ai/new?q= tik
@@ -367,6 +478,7 @@ class MainWindow(QMainWindow):
             "paskyra). Niekas neissiunciama be jusu rankos."))
         dlg.setStandardButtons(QMessageBox.StandardButton.Ok
                                | QMessageBox.StandardButton.Cancel)
+        isversti_mygtukus(dlg)          # kliurka 17
         if dlg.exec() != QMessageBox.StandardButton.Ok:
             return
         # Promptas VISADA anglu k. (Roberto patikslinimas 2026-08-08:
@@ -384,6 +496,12 @@ class MainWindow(QMainWindow):
             " - then the program's code and README, and answer my question"
             " in plain, human language - no programmer jargon."
             " My question: ")
+        # Telefono klaidos langas (2026-08-28) paduoda paruosta klausima -
+        # vartotojui liks tik spausti siuntima (arba papildyti savais
+        # zodziais). klausimas gali ateiti ir kaip QAction checked=False -
+        # guard'as praleidzia tik tikra teksta.
+        if isinstance(klausimas, str) and klausimas:
+            promptas += klausimas
         webbrowser.open("https://claude.ai/new?q="
                         + urllib.parse.quote(promptas))
 
@@ -420,7 +538,8 @@ class MainWindow(QMainWindow):
             'font-weight:bold;">GitHub</a>')
         nuoroda.setOpenExternalLinks(True)
         lay.addWidget(nuoroda)
-        mygtukai = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+        mygtukai = isversti_mygtukus(
+            QDialogButtonBox(QDialogButtonBox.StandardButton.Close))
         mygtukai.rejected.connect(dlg.reject)
         lay.addWidget(mygtukai)
         dlg.exec()
@@ -447,7 +566,8 @@ class MainWindow(QMainWindow):
         # Monospace - kad README ASCII antrastes lygiuotusi
         rodinys.setFont(QFont("Consolas", 10))
         lay.addWidget(rodinys)
-        mygtukai = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+        mygtukai = isversti_mygtukus(
+            QDialogButtonBox(QDialogButtonBox.StandardButton.Close))
         mygtukai.rejected.connect(dlg.reject)
         lay.addWidget(mygtukai)
         dlg.resize(780, 560)
@@ -572,6 +692,10 @@ class MainWindow(QMainWindow):
         self._rezultatai.setMovement(QListWidget.Movement.Static)
         self._rezultatai.setUniformItemSizes(True)
         self._rezultatai.setWordWrap(False)
+        # Skrolas EILUTEMIS, ne pikseliais - kad nesustotu per puse eiles
+        # (Roberto gyvas demo 2026-08-29: "puse vienos matau puse kitos")
+        self._rezultatai.setVerticalScrollMode(
+            QListWidget.ScrollMode.ScrollPerItem)
         self._rezultatai.itemDoubleClicked.connect(
             self._on_rezultatas_dblclick)
         # Desinys klavisas (Roberto pasiulymas 2026-08-07; TempCleaner
@@ -631,6 +755,10 @@ class MainWindow(QMainWindow):
         kelias = QFileDialog.getExistingDirectory(
             self, t("Pasirinkite nuotrauku aplanka"))
         if kelias:
+            # KLIURKA 20: Qt dialogas VISADA grazina "D:/foto", o sisteminiai
+            # saltiniai ateina "C:\Users\..." - medyje kabojo abu stiliai
+            # salia (Roberto laptopo ratas 2026-08-25)
+            kelias = str(Path(kelias))
             # Disko saknis (E:/) aplanko vardo neturi - vardu tampa
             # etikete arba "Diskas E:" (Roberto kliurka Nr. 5, 2026-08-08:
             # medyje kabojo tuscias "- E:/")
@@ -691,8 +819,8 @@ class MainWindow(QMainWindow):
         sekundes = (med_failai * models.IVERTIS_MS_FAILUI / 1000.0
                     + med_baitai / (models.IVERTIS_MB_PER_S * 1048576.0))
         minutes = max(1, int(round(sekundes / 60.0)))
-        tekstas = t("Pazymeta: {} {}, ~{} failu, ~{:.1f} GB, ~{} min").format(
-            len(irasai), zodis, failai, baitai / 1073741824.0, minutes)
+        tekstas = t("Pazymeta: {} {}, ~{} failu, ~{}, ~{} min").format(
+            len(irasai), zodis, failai, models.dydis_tekstu(baitai), minutes)
         if be_ivercio:
             tekstas += " " + t("({} be zvalgybos ivercio)").format(be_ivercio)
         self._suma.setText(tekstas)
@@ -723,6 +851,62 @@ class MainWindow(QMainWindow):
         self._thread.finished.connect(self._thread.deleteLater)
         self._thread.start()
 
+    # ------------------------------------------------- kartotekos fonas (45)
+    def _fonas_start(self):
+        """A2 fonas: tyliai pildo kartoteka, kad atjungus diska miniatiuros
+        liktu. Atskiras slot'as - pagrindinio worker'io neuzima; jei jau
+        sukasi arba indekso dar nera - nieko nedaro."""
+        if not self._db_kelias.exists():
+            return
+        if self._fono_thread is not None:
+            try:
+                if self._fono_thread.isRunning():
+                    return
+            except RuntimeError:
+                pass
+        w = workeriai.KartotekosFonas(self._db_kelias)
+        w.progresas.connect(self._fonas_progresas)
+        w.done.connect(self._fonas_done)
+        w.error_signal.connect(self._fonas_klaida)
+        self._fono_worker = w
+        self._fono_thread = QThread()
+        w.moveToThread(self._fono_thread)
+        self._fono_thread.started.connect(w.run)
+        w.done.connect(self._fono_thread.quit)
+        w.error_signal.connect(self._fono_thread.quit)
+        self._fono_thread.finished.connect(w.deleteLater)
+        self._fono_thread.finished.connect(self._fono_thread.deleteLater)
+        self._fono_thread.start(QThread.Priority.LowestPriority)
+
+    def _fonas_progresas(self, tekstas):
+        self._log(t("Kartoteka pildosi: {}").format(tekstas))
+
+    def _fonas_done(self, n):
+        if n:
+            self._log(t("Kartoteka pasipilde: +{} miniatiuru.").format(n))
+
+    def _fonas_klaida(self, klaida):
+        # Fonas niekada netrukdo darbui - klaida tik i zurnala
+        self._log(t("Kartotekos fonas sustojo: {}").format(klaida))
+
+    def closeEvent(self, event):
+        """Fonas ir worker'iai tvarkingai sustabdomi (guard receptas)."""
+        for w, th in ((self._fono_worker, self._fono_thread),
+                      (self._worker, self._thread)):
+            if w is not None:
+                try:
+                    w.stop()
+                except RuntimeError:
+                    pass
+            if th is not None:
+                try:
+                    if th.isRunning():
+                        th.quit()
+                        th.wait(2000)
+                except RuntimeError:
+                    pass
+        super().closeEvent(event)
+
     # --------------------------------------------------------------- zvalgyba
     def _zvalgyba_start(self):
         irasai = self._pazymeti_irasai()
@@ -749,9 +933,10 @@ class MainWindow(QMainWindow):
             return
         it.setData(0, _IVERCIO_ROLE, rez)
         it.setText(1, "{:,}".format(rez["failai"]).replace(",", " "))
-        it.setText(2, "%.2f GB" % (rez["baitai"] / 1073741824.0))
-        self._log(t("Zvalgyba: {} failu, {:.2f} GB, praleista {}").format(
-            rez["failai"], rez["baitai"] / 1073741824.0, rez["praleista_n"]))
+        it.setText(2, models.dydis_tekstu(rez["baitai"]))
+        self._log(t("Zvalgyba: {} failu, {}, praleista {}").format(
+            rez["failai"], models.dydis_tekstu(rez["baitai"]),
+            rez["praleista_n"]))
         # UX slifas 2026-08-13 (Roberto pastaba - krikstynu momento
         # lukestis): apie nauja diska pasakome jau zvalgyboje, kad
         # dialogas pries indeksavima nebutu staigmena.
@@ -769,13 +954,17 @@ class MainWindow(QMainWindow):
         self._atnaujinti_suma()
 
     def _telefono_gidas(self):
-        """Kaip paimti nuotraukas is telefono - GIDAS, ne veiksmas
-        (be MTP tiesioginio skaitymo v1 - WPD/COM yra v2 kandidatas).
-        Roberto gyvas testas 2026-08-08: vartotojas sedi prisijunges
-        per Bluetooth/Phone Link ir galvoja 'tai kam man laidas?' -
-        todel atskira pastraipa, kodel BT/PL neuztenka."""
-        QMessageBox.information(
-            self, t("Kaip paimti is telefono?"),
+        """Gidas LIEKA mokytoju (Roberto 2026-08-28: zmogus turi zinoti,
+        ka telefone atlikti), bet gauna mygtuka 'Jungti telefona' -
+        v1.0 VINIS (PLANAS 4b2): programa pati aptinka, zvalgo ir
+        kopijuoja per Shell COM (telefonas.py). Roberto gyvas testas
+        2026-08-08: vartotojas sedi prisijunges per Bluetooth/Phone Link
+        ir galvoja 'tai kam man laidas?' - todel atskira pastraipa,
+        kodel BT/PL neuztenka."""
+        dlg = QMessageBox(self)
+        dlg.setIcon(QMessageBox.Icon.Information)
+        dlg.setWindowTitle(t("Kaip paimti is telefono?"))
+        dlg.setText(
             t("Kaip paimti nuotraukas is telefono:\n\n"
               "1. Atsidarykite telefona Explorer'yje:\n"
               "   - jei telefonas jau matomas Explorer sarase\n"
@@ -803,6 +992,116 @@ class MainWindow(QMainWindow):
               "debesis: jei naudojate Google Photos / OneDrive, jie\n"
               "nuotraukas jau atsiuncia i kompiuterio aplanka - ta\n"
               "aplanka cia ir pridekite."))
+        dlg.setInformativeText(
+            t("ARBA leiskite programai padaryti tai PACIAI: atlikite"
+              " 1 zingsni (laidas + \"Failu perdavimas\"), UZDARYKITE"
+              " Explorer langa su telefonu (telefona vienu metu mato tik"
+              " viena programa) ir spauskite \"Jungti telefona\" -"
+              " programa pati suras nuotrauku vietas, nukopijuos ir"
+              " prides i saltinius. Is telefono TIK skaitoma - nieko"
+              " netrinam ir nerasom."))
+        jungti = dlg.addButton(t("Jungti telefona"),
+                               QMessageBox.ButtonRole.AcceptRole)
+        dlg.addButton(t("Uzdaryti"), QMessageBox.ButtonRole.RejectRole)
+        dlg.exec()
+        if dlg.clickedButton() is jungti:
+            self._telefonas_start()
+
+    # ------------------------------------------ telefonas (v1.0 VINIS)
+    def _telefonas_start(self):
+        w = workeriai.TelefonoZvalgybosWorker()
+        w.done.connect(self._on_telefono_zvalgyba)
+        w.error_signal.connect(self._on_telefono_klaida_tekstas)
+        self._pradeti_darba(t("Ieskomas telefonas"))
+        self._paleisti_worker(w)
+
+    def _on_telefono_klaida_tekstas(self, tekstas):
+        self._baigti_darba()
+        self._log(t("Telefono klaida: {}").format(tekstas))
+        self._telefono_klaida()
+
+    def _on_telefono_zvalgyba(self, payload):
+        telefonai, z = payload
+        self._baigti_darba()
+        vietos = [v for v in (z or {}).get("vietos", []) if v["kiek"] > 0]
+        if not telefonai or z is None or z.get("klaida") or not vietos:
+            self._telefono_klaida()
+            return
+        vardas = telefonai[0]["vardas"]
+        self._log(t("Rastas telefonas: {} ({} nuotrauku vietu)").format(
+            vardas, len(vietos)))
+        dlg = TelefonoDialogas(vardas, vietos, self)
+        if dlg.exec() != QDialog.DialogCode.Accepted:
+            self._log(t("Telefono kopija atsaukta."))
+            return
+        keliai = dlg.pasirinkti()
+        tikslas = dlg.tikslas()
+        if not keliai or not tikslas:
+            self._log(t("Telefono kopija atsaukta."))
+            return
+        Path(tikslas).mkdir(parents=True, exist_ok=True)
+        self._telefono_tikslas = str(tikslas)
+        self._telefono_vardas = vardas
+        w = workeriai.TelefonoKopijosWorker(vardas, keliai, tikslas)
+        w.zurnalas.connect(self._log)
+        w.progresas.connect(self._on_ind_progresas)
+        w.done.connect(self._on_telefono_kopija_done)
+        w.error_signal.connect(self._on_telefono_klaida_tekstas)
+        self._pradeti_darba(t("Kopijuojama is telefono"))
+        self._paleisti_worker(w)
+
+    def _on_telefono_kopija_done(self, rezultatas):
+        viso, praleista = rezultatas
+        self._baigti_darba()
+        self._log(t("Telefonas baigtas: tiksle {} failu"
+                    " ({} praleista kaip jau turimi).").format(
+            viso, praleista))
+        # KLIURKA 26 (Roberto gyvas ratas 2026-08-28): pakartotine kopija
+        # i ta pati aplanka pridedavo ANTRA vienoda saltinio eilute -
+        # pirma patikrinam, ar kelias jau medyje.
+        esamas = None
+        for i in range(self._medis.topLevelItemCount()):
+            it = self._medis.topLevelItem(i)
+            if it.data(0, _KELIO_ROLE) == self._telefono_tikslas:
+                esamas = it
+                break
+        if esamas is None:
+            esamas = self._prideti_saltini(
+                self._telefono_vardas, self._telefono_tikslas,
+                pastaba=t("is telefono"))
+        esamas.setCheckState(0, Qt.CheckState.Checked)
+        self._log(t("Aplankas pridetas prie saltiniu - spauskite"
+                    " \"Indeksuoti pazymetus\"."))
+
+    def _telefono_klaida(self):
+        """Roberto 2026-08-28: nepavykus - langas su paaiskinimu ir
+        keliu pas claude.ai konsultacija (spr. 40 mechanizmas)."""
+        dlg = QMessageBox(self)
+        dlg.setIcon(QMessageBox.Icon.Warning)
+        dlg.setWindowTitle(t("Telefono nerandu"))
+        dlg.setText(t(
+            "Nepavyko pamatyti telefono nuotrauku. Dazniausios"
+            " priezastys:\n\n"
+            "1. Telefonas neatsake i \"USB rezimas?\" klausima -\n"
+            "   pasirinkite \"Failu perdavimas\" (File Transfer)\n"
+            "   TELEFONO ekrane. Numatytasis buna \"tik krovimas\".\n"
+            "2. Telefona naudoja kita programa - uzdarykite Explorer\n"
+            "   langa su telefonu ir bandykite dar karta (telefona\n"
+            "   vienu metu mato tik viena programa).\n"
+            "3. Ekranas uzrakintas - atrakinkite ir perkiskite laida.\n"
+            "4. Laidas tik krovimo - pabandykite kita laida.\n"
+            "5. Senas telefonas gali apsimesti CD-ROM ir siulyti\n"
+            "   diegti savo programa - nediekite, tiesiog perkiskite\n"
+            "   laida i kita lizda."))
+        klausk = dlg.addButton(t("Klausti DI"),
+                               QMessageBox.ButtonRole.HelpRole)
+        dlg.addButton(t("Uzdaryti"), QMessageBox.ButtonRole.RejectRole)
+        dlg.exec()
+        if dlg.clickedButton() is klausk:
+            self._on_klausk_di(klausimas=(
+                "I connected my Android phone with a USB cable and chose"
+                " File Transfer mode, but the app still cannot see the"
+                " phone or its photos. What should I check step by step?"))
 
     # ------------------------------------------------------------ indeksavimas
     def _zinomas_lentynos_vardas(self, serial):
@@ -823,10 +1122,13 @@ class MainWindow(QMainWindow):
         """Lentynos tapatybe pries indeksavima (sprendimas 30; Roberto
         pataisa 2026-08-08 'keistuoliu juk buna'): zinoma lentyna
         atpazistama pagal serial ir jos vardas NELIECIAMAS; naujam
-        diskui - krikstynu dialogas SU pasiulymu abiem tipams, tik
-        Cancel semantika skiriasi: isimamam = praleisti saltini (nera
-        vardo - nera lentynos), vidiniam = lieka siulomas autovardas
-        (C: disko nepraleisi, jis kompo dalis)."""
+        diskui - krikstynu dialogas SU pasiulymu abiem tipams.
+
+        KLIURKA 25 (Roberto gyvas ratas 2026-08-28): Cancel semantika
+        dabar VIENODA visiems diskams - praleisti saltini si karta.
+        Senoji spr. 38 dalis "vidiniam Cancel = lieka pasiulymas"
+        ATSAUKTA: pats Robertas paspaude Cancel tikedamasis atsaukti,
+        o indeksavimas prasidejo - mygtukas melavo lukesciui."""
         serial, etikete, fs = lentynos.volume_info(kelias)
         if serial is None:
             serial = "KELIAS:" + str(Path(kelias).anchor or kelias)
@@ -838,21 +1140,22 @@ class MainWindow(QMainWindow):
             if self._testinis:
                 vardas = siulymas
             elif vidinis:
-                tekstas, ok = QInputDialog.getText(
+                tekstas, ok = klausti_vardo(
                     self, t("Lentynos krikstynos"),
                     t("Sis kompiuterio diskas gaus lentynos varda.\n"
                       "Galite palikti siuloma arba irasyti sava "
                       "(iki 40 zenklu)."),
-                    text=siulymas)
-                vardas = (tekstas.strip()[:40] or siulymas) if ok \
-                    else siulymas   # Cancel = lieka siulymas
+                    siulymas)
+                if not ok:
+                    return None   # kliurka 25: Cancel = praleisti saltini
+                vardas = tekstas.strip()[:40] or siulymas
             else:
-                tekstas, ok = QInputDialog.getText(
+                tekstas, ok = klausti_vardo(
                     self, t("Lentynos krikstynos"),
                     t("Naujas diskas! Duokite lentynai varda, kuri "
                       "atpazinsite po metu (iki 40 zenklu).\nPatarimas: "
                       "uzklijuokite ant disko lipduka su siuo vardu."),
-                    text=siulymas)
+                    siulymas)
                 if not ok:
                     return None   # Cancel = sio saltinio neindeksuoti
                 vardas = tekstas.strip()[:40] or siulymas
@@ -886,37 +1189,77 @@ class MainWindow(QMainWindow):
         self._busena.setText("%s  %s  (%s)" % (self._darbo_tekstas,
                                                self._mmss(), tekstas))
 
-    def _on_ind_done(self, suvestine):
+    def _on_ind_done(self, payload):
+        suvestine, kopijos, rentgeno_md = payload
         self._baigti_darba()
         viso = 0
         for vardas, stat in suvestine:
             viso += stat["indeksuota"]
-            self._log(t("Indeksuota {}: {} failu ({} nepakite, {} neatpazinta,"
+            self._log(t("Indeksuota {} - {} failu ({} nepakite, {} neatpazinta,"
                         " {} ne medija, {} praleista)").format(
                 vardas, stat["indeksuota"], stat["nepakite"],
                 stat["neatpazinta"], stat.get("ne_medija", 0),
                 stat["praleista_n"]))
+            # 4e p. 7/8: bedaciu gelbejimas matomas zurnale
+            if stat.get("kaimynyste") or stat.get("partijos"):
+                self._log(t("[{}] be datos likusiems: kaimynyste +{},"
+                            " mtime partijos +{} - failai gavo kaimynu"
+                            " medianos data.").format(
+                    vardas, stat.get("kaimynyste", 0),
+                    stat.get("partijos", 0)))
         self._log(t("Baigta. Is viso suindeksuota {} failu.").format(viso))
         self._lentynu_combo_pildyti()   # naujos lentynos matomos paieskoje
         self._atnaujinti_indekso_busena()
+        # Spr. 45: nauji irasai -> kartotekos fonas pasipildo pats
+        QTimer.singleShot(2000, self._fonas_start)
+        # 4f p. 3 (2026-08-29): ARCHYVO RENTGENAS - A pakopos veidas.
+        # Rodomas PIRMAS (jis atsakymas "kas mano archyve"), kopiju
+        # langas po jo. Testinese sesijose tekstas pasiekiamas per
+        # self._rentgeno_md (patikroms - be modalinio lango).
+        self._rentgeno_md = rentgeno_md
+        if rentgeno_md and not self._testinis:
+            self.paruosti_rentgeno_langa(rentgeno_md).exec()
+        # 4e p. 2 (2026-08-28): kopiju langas jau A pakopos pabaigoje -
+        # patogiausias momentas nueiti i SDF yra PRIES kraustymasi.
+        # Pries-vykdymo vartai (spr. 44) LIEKA - cia tik ankstyvas
+        # informavimas; nuo lango nuovargio saugo salyga "tik kai
+        # kopiju skaicius pasikeite nuo paskutinio parodymo sioje
+        # sesijoje".
+        if kopijos:
+            self._log(t("Kopiju suvestine: ~{} failai galimai kartojasi"
+                        " (~{}). Patarimas: pirma Smart Duplicate Finder,"
+                        " tada archyvo kurimas.").format(
+                kopijos[0], models.dydis_tekstu(kopijos[1])))
+            if (not self._testinis
+                    and kopijos[0] != getattr(self, "_kopiju_pranesta",
+                                              None)):
+                self._kopiju_pranesta = kopijos[0]
+                langas, _ = self.paruosti_kopiju_langa(
+                    *kopijos, po_indeksavimo=True)
+                langas.exec()
 
     # ------------------------------------------- B pakopa: namu archyvas (E4)
     def _archyvas_start(self, _=False, tikslo_kelias=None):
         """Kraustymasis: tikslo lentyna -> pasiulymai -> perziura ->
         vykdymas. tikslo_kelias parametras - testams (be dialogu)."""
         if tikslo_kelias is None:
+            # KLIURKA 21 (Roberto laptopo ratas 2026-08-25): antrastė sakė
+            # "pasirinkite NAUJA aplanka", zmogus iraso varda i "Folder:"
+            # lauka - ir Windows atsako "Path does not exist". Dialogas
+            # NAUJO aplanko irasant varda nesukuria, reikia jo "New folder"
+            # mygtuko. Antraste dabar nukreipia i mygtuka, ne i lauka.
             tikslo_kelias = QFileDialog.getExistingDirectory(
-                self, t("Pasirinkite NAUJA/tuscia archyvo aplanka"))
+                self, t("Archyvo aplankas: pasirinkite tuscia arba sukurkite"
+                        " nauja dialogo mygtuku"))
             if not tikslo_kelias:
                 return
         tikslas = Path(tikslo_kelias)
         if any(tikslas.iterdir()) and not self._testinis:
-            atsakymas = QMessageBox.question(
-                self, t("Aplankas netuscias"),
-                t("Namas statomas tusciame sklype - aplanke jau yra failu."
-                  "\nTesti vis tiek? (Esami failai NEBUS liesti; sutampantis"
-                  " turinys bus praleistas.)"))
-            if atsakymas != QMessageBox.StandardButton.Yes:
+            if not klausti(
+                    self, t("Aplankas netuscias"),
+                    t("Namas statomas tusciame sklype - aplanke jau yra failu."
+                      "\nTesti vis tiek? (Esami failai NEBUS liesti;"
+                      " sutampantis turinys bus praleistas.)")):
                 return
         self._archyvo_tikslas = str(tikslas)
         w = workeriai.PlanavimoWorker(self._db_kelias)
@@ -925,14 +1268,127 @@ class MainWindow(QMainWindow):
         self._pradeti_darba(t("Ruosiami pasiulymai"))
         self._paleisti_worker(w)
 
+    def _klausti_del_kopiju(self, kiek, baitai):
+        """Parodo kopiju langa. True = testi, False = sustoti."""
+        langas, testi = self.paruosti_kopiju_langa(kiek, baitai)
+        langas.exec()
+        return langas.clickedButton() is testi
+
+    def paruosti_kopiju_langa(self, kiek, baitai, po_indeksavimo=False):
+        """Kopiju langas: pasakom VISKA ir duodam iseiti (spr. 27b tesinys).
+
+        Grazina (langas, testi_mygtukas). Tekstas sako tris dalykus: ka
+        laikom kopija, ko NEMATOM (panasiu - tam yra SDF) ir kad kopijos
+        pasirinkimas gali nesutapti su zmogaus pasirinkimu. Atskirta nuo
+        exec() - patikra tikrina teksta nepaleisdama modalinio lango.
+
+        po_indeksavimo=True (4e p. 2, 2026-08-28): informacinis variantas
+        A pakopos pabaigai - vietoj "Testi/Sustoti" vienas "Supratau"
+        (nieko nevykdom, tik pasakom ANKSTI, kol patogiausia nueiti i
+        SDF); testi_mygtukas tada None.
+        """
+        dydis = models.dydis_tekstu(baitai)  # kliurka 18 - viena vieta visiems
+        langas = QMessageBox(self)
+        langas.setIcon(QMessageBox.Icon.Question)
+        langas.setWindowTitle(t("Yra kopiju"))
+        langas.setText(
+            t("Panasu, kad ~%d failai kartojasi (vienodo dydzio, ~%s).")
+            % (kiek, dydis))
+        langas.setInformativeText(
+            t("Skaicius - ivertis pagal vienoda failo dydi; pries"
+              " keldamas i archyva turini patikrinsiu baitas i baita,"
+              " tad tikras kopiju skaicius gali buti kiek mazesnis.")
+            + "\n\n"
+            + t("Kopijomis laikau tik IDENTISKUS baitas i baita failus."
+              " Panasiu nematau: jei nuotrauka apkarpyta, patamsinta ar"
+              " sumazinta (pvz. persiusta per zinute), man tai atskiras"
+              " failas - ir i archyva keliaus visos jos versijos. Tokias"
+              " randa Smart Duplicate Finder, nes jis lygina vaizda, ne"
+              " baitus.")
+            + "\n\n"
+            + (t("Patogiausias momentas kopijoms susitvarkyti - DABAR,"
+                 " pries kuriant namu archyva: susitvarkykite su Smart"
+                 " Duplicate Finder (github.com/RobertasTa/"
+                 "smart-duplicate-finder) ir suindeksuokite is naujo,"
+                 " arba tiesiog teskite - pries kuriant archyva ispesiu"
+                 " dar karta.")
+               if po_indeksavimo else
+               t("Jei tesi: keliausiu po viena kiekvieno turinio kopija."
+                 " Kuria butent - pasirinksiu pagal patikimesne data, ir"
+                 " ji gali tureti kita varda ar kita aplanka nei ta,"
+                 " kuria butum pasirinkes tu.")
+               + "\n\n"
+               + t("Jei nori pasirinkti pats: sustok, susitvarkyk kopijas su"
+                   " Smart Duplicate Finder (github.com/RobertasTa/"
+                   "smart-duplicate-finder) ir paleisk PHOTO home is"
+                   " naujo.")))
+        if po_indeksavimo:
+            langas.addButton(t("Supratau"), QMessageBox.ButtonRole.AcceptRole)
+            return langas, None
+        testi = langas.addButton(t("Testi"),
+                                 QMessageBox.ButtonRole.AcceptRole)
+        langas.addButton(t("Sustoti"), QMessageBox.ButtonRole.RejectRole)
+        return langas, testi
+
+    def paruosti_rentgeno_langa(self, tekstas):
+        """ARCHYVO RENTGENAS (4f p. 3, 2026-08-29): A pakopos veidas -
+        nulines rizikos ataskaita po indeksavimo (nieko nekilnota, tik
+        perskaityta). Atskirta nuo exec() - patikra tikrina turini
+        nepaleisdama modalinio lango."""
+        dlg = QDialog(self)
+        dlg.setWindowTitle(t("Archyvo rentgenas"))
+        dlg.resize(680, 560)
+        stulpas = QVBoxLayout(dlg)
+        lauk = QPlainTextEdit(dlg)
+        lauk.setObjectName("rentgeno_tekstas")
+        lauk.setReadOnly(True)
+        # Lygiuotems lentelems (sluoksniai, metai) - lygiaplotis sriftas
+        lauk.setFont(QFont("Consolas"))
+        lauk.setPlainText(tekstas)
+        stulpas.addWidget(lauk)
+        eilute = QHBoxLayout()
+        saugoti = QPushButton(t("Issaugoti ataskaita..."))
+        saugoti.setObjectName("btn_rentgeno_saugoti")
+        saugoti.clicked.connect(
+            lambda _=False, tks=tekstas: self._rentgena_saugoti(tks))
+        gerai = QPushButton(t("Gerai"))
+        gerai.setDefault(True)
+        gerai.clicked.connect(dlg.accept)
+        eilute.addWidget(saugoti)
+        eilute.addStretch(1)
+        eilute.addWidget(gerai)
+        stulpas.addLayout(eilute)
+        return dlg
+
+    def _rentgena_saugoti(self, tekstas):
+        """Rentgeno .md issaugojimas ten, kur zmogus pasirinks
+        (dalinamasis - r/DataHoarder gyvena stat skrinais)."""
+        kelias, _ = QFileDialog.getSaveFileName(
+            self, t("Issaugoti ataskaita..."), "KAS_TAVO_ARCHYVE.md",
+            "Markdown (*.md)")
+        if not kelias:
+            return
+        try:
+            Path(kelias).write_text(tekstas, encoding="utf-8")
+            self._log(t("Rentgeno ataskaita issaugota: {}").format(kelias))
+        except OSError as e:
+            self._log(t("Nepavyko issaugoti ataskaitos: {}").format(e))
+
     def _on_planas_done(self, payload):
-        grupes, sdf_siulymas = payload
+        grupes, kopijos = payload
         self._baigti_darba()
-        if sdf_siulymas:
-            self._log(sdf_siulymas)
         if not grupes:
             self._log(t("Nera ka tvarkyti - pirma suindeksuokite saltinius."))
             return
+        # KOPIJU langas (Roberto sprendimas 2026-08-23): anksciau apie
+        # kopijas buvo TIK eilute zurnale - "ispet ispejo, o galimybes
+        # nueiti susitvarkyti nedave". Dabar zmogus mato, ka programa
+        # darys, ir gali sustoti. Programa uz ji NESIRENKA.
+        if kopijos and not self._testinis:
+            if not self._klausti_del_kopiju(*kopijos):
+                self._log(t("Sustabdyta - kopijas galite susitvarkyti su"
+                            " Smart Duplicate Finder."))
+                return
         if self._testinis:
             pasirinktos = [g["grupe"] for g in grupes]
             rezimas = "kopijuoti"
@@ -950,13 +1406,13 @@ class MainWindow(QMainWindow):
                         if g["grupe"] in pasirinktos)
             baitai = sum(g["baitai"] for g in grupes
                          if g["grupe"] in pasirinktos)
-            atsakymas = QMessageBox.question(
-                self, t("Perziura (niekas dar nevykdoma)"),
-                t("Bus {} ({} failu, {:.2f} GB) i:\n{}\n\nVykdyti?").format(
-                    t("PERKELIAMA") if rezimas == "perkelti"
-                    else t("KOPIJUOJAMA"),
-                    failu, baitai / 1073741824.0, self._archyvo_tikslas))
-            if atsakymas != QMessageBox.StandardButton.Yes:
+            if not klausti(
+                    self, t("Perziura (niekas dar nevykdoma)"),
+                    t("Bus {} ({} failu, {}) i:\n{}\n\nVykdyti?").format(
+                        t("PERKELIAMA") if rezimas == "perkelti"
+                        else t("KOPIJUOJAMA"),
+                        failu, models.dydis_tekstu(baitai),
+                        self._archyvo_tikslas)):
                 self._log(t("Tvarkymas atsauktas perziuroje."))
                 return
         w = workeriai.VykdymoWorker(self._db_kelias, self._archyvo_tikslas,
@@ -980,11 +1436,10 @@ class MainWindow(QMainWindow):
 
     def _undo_start(self):
         if not self._testinis:
-            atsakymas = QMessageBox.question(
-                self, t("UNDO"),
-                t("Grazinti VISKA atgal pagal UNDO zurnala?\nKopijos bus"
-                  " istrintos is archyvo, perkelti failai gris i vietas."))
-            if atsakymas != QMessageBox.StandardButton.Yes:
+            if not klausti(
+                    self, t("UNDO"),
+                    t("Grazinti VISKA atgal pagal UNDO zurnala?\nKopijos bus"
+                      " istrintos is archyvo, perkelti failai gris i vietas.")):
                 return
         w = workeriai.AtstatymoWorker(self._db_kelias)
         w.done.connect(self._on_undo_done)
@@ -999,22 +1454,37 @@ class MainWindow(QMainWindow):
 
     # ---------------------------------------------------- E5: paieska (29)
     def _pasisveikinimas(self):
-        """Seansu buhalterijos pasisveikinimas (sprendimas 7 uzuomazga)."""
-        if not self._db_kelias.exists():
-            return
-        try:
-            con = indeksas.atidaryti_ro(self._db_kelias)
-            failu = con.execute("SELECT COUNT(*) FROM failai").fetchone()[0]
-            lentynu = con.execute(
-                "SELECT COUNT(*) FROM lentynos").fetchone()[0]
-            con.close()
-        except Exception:
-            return
+        """Seansu buhalterijos pasisveikinimas (sprendimas 7 uzuomazga).
+        Pirmam paleidimui (tuscias indeksas) - Quick start takas
+        (4f p. 4): trys zingsniai + "ne baito" pazadas pirmame ekrane."""
+        failu = lentynu = 0
+        if self._db_kelias.exists():
+            try:
+                con = indeksas.atidaryti_ro(self._db_kelias)
+                failu = con.execute(
+                    "SELECT COUNT(*) FROM failai").fetchone()[0]
+                lentynu = con.execute(
+                    "SELECT COUNT(*) FROM lentynos").fetchone()[0]
+                con.close()
+            except Exception:
+                return
         if failu:
             self._log(t("Sveiki sugrize! Indekse - {} {} ({} {}),"
                         " paieska veikia is karto.").format(
                 failu, kiekio_zodis(failu, "failas"),
                 lentynu, kiekio_zodis(lentynu, "lentyna")))
+        else:
+            self._log(t("Pirmas kartas? Takas paprastas:"))
+            self._log(t("  1. Prijunkite telefona arba pazymekite aplanka"
+                        " ir spauskite Indeksuoti - siame zingsnyje"
+                        " programa failus tik SKAITO."))
+            self._log(t("  2. Gausite ARCHYVO RENTGENA: kas jusu"
+                        " archyve, is kur datos, kiek liko be ju."))
+            self._log(t("  3. Jei panorekite - namu archyvas Metai\\"
+                        "Menuo tvarka, o kiekvienas zingsnis su UNDO."))
+            self._log(t("PAZADAS: ne vienas baitas jusu failuose"
+                        " nekeiciamas; tvarkymas - tik kopijos arba"
+                        " perkelimas su pilnu UNDO."))
 
     def _atnaujinti_indekso_busena(self):
         """Desinysis apacios kampas: kiek turto indekse (visada matosi)."""
@@ -1179,11 +1649,12 @@ class MainWindow(QMainWindow):
                 r["lentynos_vardas"], r["datetaken"] or ""))
             self._rezultatai.addItem(it)
             self._p_itemai[r["id"]] = it
-            if r.get("saltinio_saknis"):
-                uzduotys.append((r["id"],
-                                 str(Path(r["saltinio_saknis"])
-                                     / r["santykinis_kelias"]),
-                                 r["mtime"]))
+            # Spr. 45: uzduotis VISIEMS (ir atjungtu lentynu) - worker'is
+            # pirma ziuri i kartotekos sandeli, tik miss'a gamina is disko
+            kelias = (str(Path(r["saltinio_saknis"])
+                          / r["santykinis_kelias"])
+                      if r.get("saltinio_saknis") else None)
+            uzduotys.append((r["id"], kelias, r["mtime"]))
         self._rezultatai.setUpdatesEnabled(True)
         self._p_info.setText(t("Rasta: {} (rodoma {})").format(
             kiek, len(eiles)))
@@ -1199,19 +1670,22 @@ class MainWindow(QMainWindow):
             self._paleisti_worker(w)
 
     def _on_min_vienas(self, payload):
-        fileid, kelias = payload
+        # Spr. 45: payload = (fileid, jpeg_bytes) - is kartotekos sandelio
+        fileid, jpeg = payload
         it = self._p_itemai.get(fileid)
-        if it is not None and kelias:
-            it.setIcon(QIcon(self._kvadratine(kelias)))
+        if it is not None and jpeg:
+            pm = QPixmap()
+            if pm.loadFromData(jpeg, "JPEG"):
+                it.setIcon(QIcon(self._kvadratine(pm)))
 
     @staticmethod
-    def _kvadratine(kelias):
+    def _kvadratine(pm):
         """Miniatiura permatomo DYDIS kvadrato centre. Qt 6.11 QIcon
         nekvadratini pixmapa istampo i langeli proporciju nepaisydamas
         (Roberto radinys 2026-08-08), o mazesnes uz langeli dar ir
         isputo i mosle - todel kvadrata komponuojam patys: proporcijos
-        isliekamos, mazi vaizdai lieka naturalaus dydzio."""
-        pm = QPixmap(kelias)
+        isliekamos, mazi vaizdai lieka naturalaus dydzio.
+        Nuo 2026-08-29 ima QPixmap (bytes ateina is sandelio, ne is kelio)."""
         d = miniaturos.DYDIS
         if pm.isNull() or (pm.width() == d and pm.height() == d):
             return pm
@@ -1263,6 +1737,48 @@ class MainWindow(QMainWindow):
         else:
             self._pranesti_neprieinama(r, kelias)
 
+    def _redaktoriu_pagalba(self):
+        """Spr. 4d: PRIES atidarant INI - paaiskinamasis langas su OK/Atsaukti
+        ir "Klausk DI" (Roberto 2026-08-29: "ne bet kuris vartotojas supras,
+        ka keisti; jei neaisku - per klaustuka pas autoriu"). OK atidaro/
+        sukuria faila, "Klausk DI" nuveda pas autoriu su paruostu klausimu."""
+        dlg = QMessageBox(self)
+        dlg.setWindowTitle(t("Megstami redaktoriai"))
+        ico = self._res_kelias("ikona.ico")
+        if ico.exists():
+            dlg.setIconPixmap(QIcon(str(ico)).pixmap(64, 64))
+        dlg.setText(t(
+            "Cia galite nurodyti savo megstamas programas, kuriomis"
+            " atidarysite nuotrauka desiniu klavisu (pvz. Photoshop,"
+            " GIMP, Paint).\n\n"
+            "Paspaudus OK atsidarys tekstinis failas. Kiekviena programa"
+            " rasoma dviem eilutemis:\n\n"
+            "   [Photoshop]\n"
+            "   kelias = C:\\Program Files\\...\\Photoshop.exe\n\n"
+            "Lauztiniuose skliaustuose - pavadinimas, kuri matysite meniu."
+            " Kelia paprasciausia nukopijuoti is Explorer adreso juostos"
+            " ir iklijuoti - dvigubu bruksniu NEREIKIA.\n\n"
+            "Issaugokite faila (Ctrl+S) ir uzdarykite - naujos programos"
+            " meniu atsiras is karto.\n\n"
+            "Jei neaisku - paspauskite \"Klausk DI\" ir autoriaus"
+            " padejejas paaiskins."))
+        dlg.setStandardButtons(QMessageBox.StandardButton.Ok
+                               | QMessageBox.StandardButton.Cancel)
+        b_di = dlg.addButton(t("Klausk DI"),
+                             QMessageBox.ButtonRole.HelpRole)
+        isversti_mygtukus(dlg)          # kliurka 17
+        dlg.exec()
+        pasp = dlg.clickedButton()
+        if pasp is b_di:
+            self._on_klausk_di(klausimas=(
+                "How do I add my favorite editor (like Photoshop) to the"
+                " right-click menu? Explain step by step in plain words."))
+            return
+        if dlg.standardButton(pasp) == QMessageBox.StandardButton.Ok:
+            ini = redaktoriai.uztikrinti_faila()
+            os.startfile(str(ini))
+            self._log(t("Redaktoriu failas: {}").format(ini))
+
     def _rezultatu_meniu(self, pozicija):
         """Desinys klavisas ant rezultato: sistemine perziurykle /
         Explorer / kelio kopija. Perziura - OS numatyta programa
@@ -1273,7 +1789,15 @@ class MainWindow(QMainWindow):
         r = it.data(_KELIO_ROLE)
         kelias = self._rezultato_kelias(r)
         meniu = QMenu(self)
-        a_perziura = meniu.addAction(t("Atverti perziurykleje"))
+        a_perziura = meniu.addAction(t("Atverti perziurai"))
+        # Spr. 4d: vartotojo megstami redaktoriai (INI) - kiekvienas atskiru
+        # punktu. "Namai, ne dirbtuves": mes neredaguojam, tik atiduodam.
+        red_veiksmai = {}
+        for vardas, red_kelias in redaktoriai.sarasas():
+            veiksmas = meniu.addAction(t("Atverti su {}").format(vardas))
+            red_veiksmai[veiksmas] = red_kelias
+        a_redaktoriai = meniu.addAction(t("Prideti/keisti redaktorius..."))
+        meniu.addSeparator()
         a_explorer = meniu.addAction(t("Parodyti Explorer'yje"))
         a_kopijuoti = meniu.addAction(t("Kopijuoti kelia"))
         pasirinktas = meniu.exec(self._rezultatai.mapToGlobal(pozicija))
@@ -1284,8 +1808,17 @@ class MainWindow(QMainWindow):
                 str(kelias) if kelias else r["santykinis_kelias"])
             self._log(t("Kelias nukopijuotas."))
             return
+        if pasirinktas == a_redaktoriai:
+            self._redaktoriu_pagalba()
+            return
         if kelias is None or not kelias.exists():
             self._pranesti_neprieinama(r, kelias)
+            return
+        if pasirinktas in red_veiksmai:
+            ok, klaida = redaktoriai.atverti(red_veiksmai[pasirinktas], kelias)
+            if not ok:
+                self._log(t("Nepavyko atverti redaktoriuje: {}").format(
+                    klaida))
             return
         if pasirinktas == a_perziura:
             os.startfile(str(kelias))
@@ -1358,11 +1891,8 @@ class MainWindow(QMainWindow):
             return
         if self._testinis:
             return
-        reply = QMessageBox.question(
-            self, t("Kalba"),
-            t("Kalba issaugota. Perleisti programa dabar?"),
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        if reply == QMessageBox.StandardButton.Yes:
+        if klausti(self, t("Kalba"),
+                   t("Kalba issaugota. Perleisti programa dabar?")):
             self._perleisti_programa()
 
     def _perleisti_programa(self):
@@ -1426,3 +1956,60 @@ class MainWindow(QMainWindow):
 
     def _log(self, tekstas):
         self._zurnalas.appendPlainText(tekstas)
+
+
+class TelefonoDialogas(QDialog):
+    """v1.0 VINIS: telefono zvalgybos rezultatai - ka kopijuoti ir kur.
+
+    Varneles rastoms medijos vietoms (pazymetos, kur failu > 0) + tikslo
+    aplankas kompiuteryje (siulomas Pictures pakatalogis su telefono
+    vardu ir data; "programa siulo, zmogus sprendzia" - spr. 25 DNR).
+    """
+
+    def __init__(self, telefono_vardas, vietos, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(t("Paimti is telefono"))
+        self.setMinimumWidth(520)
+        isdest = QVBoxLayout(self)
+        isdest.addWidget(QLabel(t("Telefonas: {}").format(telefono_vardas)))
+        isdest.addWidget(QLabel(t("Ka kopijuoti (rastos nuotrauku vietos):")))
+        self._varneles = []
+        for v in vietos:
+            cb = QCheckBox("%s  (%s: %d)" % (v["kelias"], t("elementu"),
+                                             v["kiek"]))
+            cb.setChecked(v["kiek"] > 0)
+            cb.setProperty("kelias", v["kelias"])
+            isdest.addWidget(cb)
+            self._varneles.append(cb)
+        isdest.addWidget(QLabel(t("I kuri aplanka kompiuteryje:")))
+        eilute = QHBoxLayout()
+        siulymas = str(Path.home() / "Pictures"
+                       / ("Telefonas %s %s" % (telefono_vardas.strip()[:30],
+                                               date.today().isoformat())))
+        self._tikslas = QLineEdit(siulymas)
+        eilute.addWidget(self._tikslas, 1)
+        parinkti = QPushButton(t("Parinkti..."))
+        parinkti.clicked.connect(self._parinkti)
+        eilute.addWidget(parinkti)
+        isdest.addLayout(eilute)
+        isdest.addWidget(QLabel(t("Is telefono TIK skaitoma - originalai"
+                                  " jame lieka nepaliesti.")))
+        mygtukai = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok
+                                    | QDialogButtonBox.StandardButton.Cancel)
+        isversti_mygtukus(mygtukai)     # kliurka 17
+        mygtukai.accepted.connect(self.accept)
+        mygtukai.rejected.connect(self.reject)
+        isdest.addWidget(mygtukai)
+
+    def _parinkti(self):
+        kelias = QFileDialog.getExistingDirectory(
+            self, t("I kuri aplanka kompiuteryje:"))
+        if kelias:
+            self._tikslas.setText(str(Path(kelias)))
+
+    def pasirinkti(self):
+        return [cb.property("kelias") for cb in self._varneles
+                if cb.isChecked()]
+
+    def tikslas(self):
+        return self._tikslas.text().strip()

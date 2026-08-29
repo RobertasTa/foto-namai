@@ -77,8 +77,8 @@ _EN = {
     "Indeksas: {}": "Index: {}",
     "Pasirinkite nuotrauku aplanka": "Choose a photo folder",
     "Nepazymeta nieko": "Nothing is checked",
-    "Pazymeta: {} {}, ~{} failu, ~{:.1f} GB, ~{} min":
-        "Checked: {} {}, ~{} files, ~{:.1f} GB, ~{} min",
+    "Pazymeta: {} {}, ~{} failu, ~{}, ~{} min":
+        "Checked: {} {}, ~{} files, ~{}, ~{} min",
     "Pazymeta: {} {} - ivercio dar nera, spauskite Zvalgyba":
         "Checked: {} {} - no estimate yet, press Estimate",
     "({} be zvalgybos ivercio)": "({} without an estimate yet)",
@@ -89,8 +89,8 @@ _EN = {
     "Phone Link kesas": "Phone Link cache",
     "kopija, ne originalai": "copies, not originals",
     "Vyksta zvalgyba": "Estimating",
-    "Zvalgyba: {} failu, {:.2f} GB, praleista {}":
-        "Estimate: {} files, {:.2f} GB, skipped {}",
+    "Zvalgyba: {} failu, {}, praleista {}":
+        "Estimate: {} files, {}, skipped {}",
     "Naujas diskas - lentynos vardo paklausiu pries indeksavima.":
         "New disk - I will ask for a shelf name before indexing.",
     "Vienkartine bazes migracija: sutvarkyta {} irasu":
@@ -107,9 +107,11 @@ _EN = {
         "now (up to 40 chars).\nTip: put a sticker with this name on the "
         "physical disk.",
     "Vyksta indeksavimas": "Indexing",
-    "Indeksuota {}: {} failu ({} nepakite, {} neatpazinta, {} ne medija,"
+    # KLIURKA 19: buvo "Indeksuota {}: ..." ir lentynos vardas, kuris pats
+    # baigiasi dvitaskiu ("DESKTOP-MAN disk D:"), duodavo "D:: 140 failu"
+    "Indeksuota {} - {} failu ({} nepakite, {} neatpazinta, {} ne medija,"
     " {} praleista)":
-        "Indexed {}: {} files ({} unchanged, {} unrecognised, {} non-media,"
+        "Indexed {} - {} files ({} unchanged, {} unrecognised, {} non-media,"
         " {} skipped)",
     "Baigta. Is viso suindeksuota {} failu.":
         "Done. {} files indexed in total.",
@@ -225,8 +227,12 @@ _EN = {
     "Namu archyvas (tvarkymas + UNDO):": "Home archive (organizing + UNDO):",
     "Kurti namu archyva...": "Build home archive...",
     "UNDO - grazinti viska atgal": "UNDO - put everything back",
-    "Pasirinkite NAUJA/tuscia archyvo aplanka":
-        "Choose a NEW/empty archive folder",
+    # KLIURKA 21: sena antraste ("pasirinkite NAUJA") siunte zmogu rasyti
+    # varda i "Folder:" lauka, o Windows atsakydavo "Path does not exist"
+    "Archyvo aplankas: pasirinkite tuscia arba sukurkite nauja dialogo"
+    " mygtuku":
+        "Archive folder: pick an empty one, or create a new one with the"
+        " dialog's button",
     "Aplankas netuscias": "Folder is not empty",
     "Namas statomas tusciame sklype - aplanke jau yra failu.\nTesti vis"
     " tiek? (Esami failai NEBUS liesti; sutampantis turinys bus"
@@ -249,8 +255,8 @@ _EN = {
         "Organizing cancelled in the proposal window.",
     "Nepasirinkta ne viena grupe.": "No groups selected.",
     "Perziura (niekas dar nevykdoma)": "Preview (nothing is done yet)",
-    "Bus {} ({} failu, {:.2f} GB) i:\n{}\n\nVykdyti?":
-        "Will {} ({} files, {:.2f} GB) into:\n{}\n\nProceed?",
+    "Bus {} ({} failu, {}) i:\n{}\n\nVykdyti?":
+        "Will {} ({} files, {}) into:\n{}\n\nProceed?",
     "PERKELIAMA": "MOVE", "KOPIJUOJAMA": "COPY",
     "Tvarkymas atsauktas perziuroje.": "Organizing cancelled at preview.",
     "Vyksta tvarkymas": "Organizing",
@@ -297,6 +303,30 @@ _EN = {
     "Vyksta paieska": "Searching",
     "Ruosiamos miniatiuros": "Building thumbnails",
     "Miniatiuros paruostos ({}).": "Thumbnails ready ({}).",
+    # Spr. 45 kartotekos fonas (2026-08-29)
+    "Kartoteka pildosi: {}": "Catalog filling up: {}",
+    "Kartoteka pasipilde: +{} miniatiuru.": "Catalog grew: +{} thumbnails.",
+    "Kartotekos fonas sustojo: {}": "Catalog background stopped: {}",
+    # Spr. 4d megstami redaktoriai (2026-08-29)
+    "Atverti su {}": "Open with {}",
+    "Atverti perziurai": "Open for viewing",
+    "Prideti/keisti redaktorius...": "Add / edit editors...",
+    "Redaktoriu failas: {}": "Editors file: {}",
+    "Nepavyko atverti redaktoriuje: {}": "Could not open in editor: {}",
+    "Megstami redaktoriai": "Favorite editors",
+    "Cia galite nurodyti savo megstamas programas, kuriomis atidarysite nuotrauka desiniu klavisu (pvz. Photoshop, GIMP, Paint).\n\nPaspaudus OK atsidarys tekstinis failas. Kiekviena programa rasoma dviem eilutemis:\n\n   [Photoshop]\n   kelias = C:\\Program Files\\...\\Photoshop.exe\n\nLauztiniuose skliaustuose - pavadinimas, kuri matysite meniu. Kelia paprasciausia nukopijuoti is Explorer adreso juostos ir iklijuoti - dvigubu bruksniu NEREIKIA.\n\nIssaugokite faila (Ctrl+S) ir uzdarykite - naujos programos meniu atsiras is karto.\n\nJei neaisku - paspauskite \"Klausk DI\" ir autoriaus padejejas paaiskins.":
+        "Here you can list your favorite programs for opening a photo from"
+        " the right-click menu (e.g. Photoshop, GIMP, Paint).\n\n"
+        "Pressing OK opens a text file. Each program takes two lines:\n\n"
+        "   [Photoshop]\n"
+        "   kelias = C:\\Program Files\\...\\Photoshop.exe\n\n"
+        "In the square brackets goes the name you will see in the menu."
+        " The easiest way is to copy the path from the Explorer address bar"
+        " and paste it - no double backslashes needed.\n\n"
+        "Save the file (Ctrl+S) and close it - new programs appear in the"
+        " menu right away.\n\n"
+        "If anything is unclear, press \"Ask AI\" and the author's assistant"
+        " will explain.",
     "Lentyna": "Shelf",
     # Lentynu sarasas is statuso mygtuko (Roberto zvilgsnis 2026-08-13)
     "Lentynos": "Shelves",
@@ -354,6 +384,313 @@ _EN = {
         "Portable mode is ON - data lives next to the app.",
     "Portable rezimas isjungtas - duomenys vartotojo kataloge.":
         "Portable mode is off - data lives in the user folder.",
+    # --- KOPIJU langas (Roberto sprendimas 2026-08-23 per gyva rata:
+    # "ispet ispejo, o galimybes nueiti susitvarkyti dubliu nedave").
+    # Programa NESIRENKA uz zmogu - pasako, ka darys, ir duoda iseiti.
+    "Yra kopiju": "There are copies",
+    # Spr. 27 (2026-08-29): A1 hash nuimtas - skaicius yra dydzio
+    # IVERTIS, tekstas nebemeluoja "tas pats turinys".
+    "Panasu, kad ~%d failai kartojasi (vienodo dydzio, ~%s).":
+        "It looks like ~%d files repeat (same size, ~%s).",
+    "Skaicius - ivertis pagal vienoda failo dydi; pries keldamas i"
+    " archyva turini patikrinsiu baitas i baita, tad tikras kopiju"
+    " skaicius gali buti kiek mazesnis.":
+        "The number is an estimate based on identical file size; before"
+        " moving anything into the archive I verify the content byte for"
+        " byte, so the real number of copies may be a bit smaller.",
+    "Kopijomis laikau tik IDENTISKUS baitas i baita failus. Panasiu"
+    " nematau: jei nuotrauka apkarpyta, patamsinta ar sumazinta (pvz."
+    " persiusta per zinute), man tai atskiras failas - ir i archyva"
+    " keliaus visos jos versijos. Tokias randa Smart Duplicate Finder,"
+    " nes jis lygina vaizda, ne baitus.":
+        "I treat only byte-for-byte IDENTICAL files as copies. Similar"
+        " ones I do not see: if a photo was cropped, darkened or resized"
+        " (for example sent through a messenger), to me it is a separate"
+        " file - and every version of it will go into the archive. Those"
+        " are found by Smart Duplicate Finder, because it compares the"
+        " image, not the bytes.",
+    # 4e p. 3 (2026-08-28): tekstas seka elgesi - kopija neberenkama
+    # atsitiktinai, imama patikimesnes datos; senoji "pasirinksiu pati"
+    # formuluote butu melavusi.
+    "Jei tesi: keliausiu po viena kiekvieno turinio kopija. Kuria"
+    " butent - pasirinksiu pagal patikimesne data, ir ji gali tureti"
+    " kita varda ar kita aplanka nei ta, kuria butum pasirinkes tu.":
+        "If you continue: I will place one copy of each content. Which"
+        " one exactly - I will pick by the more reliable date, and it may"
+        " have a different name or a different folder than the one you"
+        " would have picked.",
+    # 4e p. 2 (2026-08-28): informacinis variantas A pakopos pabaigai.
+    "Patogiausias momentas kopijoms susitvarkyti - DABAR, pries kuriant"
+    " namu archyva: susitvarkykite su Smart Duplicate Finder"
+    " (github.com/RobertasTa/smart-duplicate-finder) ir suindeksuokite"
+    " is naujo, arba tiesiog teskite - pries kuriant archyva ispesiu"
+    " dar karta.":
+        "The best moment to sort the copies out is NOW, before building"
+        " the home archive: clean them up with Smart Duplicate Finder"
+        " (github.com/RobertasTa/smart-duplicate-finder) and re-index,"
+        " or simply carry on - I will warn you once more before the"
+        " archive is built.",
+    "Supratau": "Got it",
+    "Kopiju suvestine: ~{} failai galimai kartojasi (~{}). Patarimas:"
+    " pirma Smart Duplicate Finder, tada archyvo kurimas.":
+        "Copies summary: ~{} files may repeat (~{}). Tip: Smart"
+        " Duplicate Finder first, then build the archive.",
+    "Jei nori pasirinkti pats: sustok, susitvarkyk kopijas su Smart"
+    " Duplicate Finder (github.com/RobertasTa/smart-duplicate-finder)"
+    " ir paleisk PHOTO home is naujo.":
+        "If you want to pick yourself: stop, sort the copies out with"
+        " Smart Duplicate Finder (github.com/RobertasTa/"
+        "smart-duplicate-finder) and start PHOTO home again.",
+    "Testi": "Continue",
+    "Sustoti": "Stop",
+    # --- Quick start takas pirmame ekrane (4f p. 4, 2026-08-29).
+    "Pirmas kartas? Takas paprastas:": "First time? The path is simple:",
+    "  1. Prijunkite telefona arba pazymekite aplanka"
+    " ir spauskite Indeksuoti - siame zingsnyje"
+    " programa failus tik SKAITO.":
+        "  1. Connect a phone or tick a folder and press Index -"
+        " in this step the program only READS your files.",
+    "  2. Gausite ARCHYVO RENTGENA: kas jusu"
+    " archyve, is kur datos, kiek liko be ju.":
+        "  2. You will get an ARCHIVE X-RAY: what is in your archive,"
+        " where the dates come from, how many are left without one.",
+    "  3. Jei panorekite - namu archyvas Metai\\"
+    "Menuo tvarka, o kiekvienas zingsnis su UNDO.":
+        "  3. If you wish - a home archive in Year\\Month order,"
+        " every step with UNDO.",
+    "PAZADAS: ne vienas baitas jusu failuose"
+    " nekeiciamas; tvarkymas - tik kopijos arba"
+    " perkelimas su pilnu UNDO.":
+        "PROMISE: not a single byte of your files is changed;"
+        " organizing is only copying or moving with full UNDO.",
+    # --- 4e p. 7/8 (2026-08-29): kaimynyste + mtime partijos.
+    "[{}] be datos likusiems: kaimynyste +{},"
+    " mtime partijos +{} - failai gavo kaimynu"
+    " medianos data.":
+        "[{}] for files left dateless: neighborhood +{},"
+        " mtime batches +{} - files received their neighbors'"
+        " median date.",
+    "- Daliai failu be savo datos data priskirta is APLINKOS:"
+    " vienalyciame aplanke - kaimynu mediana (`kaimynyste`),"
+    " kartu atkeliavusiu failu grupeje - partijos mediana"
+    " (`partija`).":
+        "- Some files without a date of their own received one from"
+        " their SURROUNDINGS: in a homogeneous folder - the neighbors'"
+        " median (`kaimynyste`), in a group of files that arrived"
+        " together - the batch median (`partija`).",
+    # --- ARCHYVO RENTGENAS (4f p. 3, 2026-08-29): A pakopos veidas.
+    "Archyvo rentgenas": "Archive X-ray",
+    "Issaugoti ataskaita...": "Save report...",
+    "Gerai": "OK",
+    "Rentgeno ataskaita issaugota: {}": "X-ray report saved: {}",
+    "Nepavyko issaugoti ataskaitos: {}": "Could not save the report: {}",
+    "# KAS TAVO ARCHYVE - rentgeno ataskaita":
+        "# WHAT IS IN YOUR ARCHIVE - X-ray report",
+    "Programa: PHOTO home (FOTO namai). Nieko nekilnojau -"
+    " tik perskaiciau ir suskaiciavau.":
+        "Program: PHOTO home (FOTO namai). Nothing was moved -"
+        " only read and counted.",
+    "## Kiek ir kur": "## How much and where",
+    "- Is viso indekse: **%d failu, %s**.":
+        "- Total in the index: **%d files, %s**.",
+    "- Lentyna `%s`: %d failu, %s.": "- Shelf `%s`: %d files, %s.",
+    "- Neatpazinto turinio (0 baitu, netikri .jpg):"
+    " %d - ju nejudinsiu.":
+        "- Unrecognized content (0 bytes, fake .jpg):"
+        " %d - I will not touch them.",
+    "## Is kur tavo datos (sluoksniu derlius)":
+        "## Where your dates come from (layer harvest)",
+    "BE PATIKIMOS DATOS (kelias i _UNDATED): **%d (%.1f %%)**."
+    " Tai ne siukslynas - tai darbo zona: failai sveiki, tik ju"
+    " fotografavimo data dar neissiaiskinta.":
+        "WITHOUT A RELIABLE DATE (headed for _UNDATED): **%d (%.1f %%)**."
+        " This is not a junkyard - it is a work zone: the files are"
+        " healthy, only their capture date is not figured out yet.",
+    "## Linija laike": "## The line in time",
+    "**Nuo ~%d tavo datos patikimos.** Senesni kadrai -"
+    " priesistore: ten datu metaduomenys reti, ir kaip"
+    " tik ten programa dirba labiausiai.":
+        "**From ~%d your dates are reliable.** Older shots are"
+        " prehistory: date metadata is rare there, and that is exactly"
+        " where this program works hardest.",
+    "Aiskios ribos, nuo kada datos patikimos, siame"
+    " archyve nesimato - patikimu datu dalis svyruoja.":
+        "No clear boundary of reliable dates is visible in this"
+        " archive - the share of reliable dates fluctuates.",
+    "| Metai | Kadru | Patikima data |":
+        "| Year | Shots | Reliable date |",
+    "## Ko neperziurejau (saugikliai)":
+        "## What I did not look into (safety rails)",
+    "Sie katalogai praleisti TYCIA (backup/kopiju"
+    " pasaulis, sisteminiai, nuorodos) - jei nori juos"
+    " itraukti, pridek kaip atskira saltini:":
+        "These folders were skipped ON PURPOSE (backup/copy world,"
+        " system folders, links) - if you want them included, add them"
+        " as a separate source:",
+    "- ... ir dar %d.": "- ... and %d more.",
+    "Ataskaita sukurta A pakopoje (zvalgyba): ne vienas failas"
+    " nepajudintas. Tvarkymas (B pakopa) - tik tavo ranka, su"
+    " UNDO.":
+        "This report was made in stage A (reconnaissance): not a single"
+        " file was moved. Organizing (stage B) happens only by your"
+        " hand, with UNDO.",
+    "Sustabdyta - kopijas galite susitvarkyti su Smart Duplicate Finder.":
+        "Stopped - you can sort the copies out with Smart Duplicate"
+        " Finder.",
+    # --- KLIURKA 16 (Roberto pastaba 2026-08-23 apie kalba failuose):
+    # KAIP_SUTVARKYTA.md ir UNDO_ZURNALAS.md gule archyve VISADA
+    # lietuviskai. Sie failai skirti ZMOGUI skaityti (ne programai
+    # atpazinti), todel jie - vartotojo kalba. Aplanku vardai, kuriuos
+    # programa turi atpazinti po metu, lieka angliski (spr. 43).
+    "# KAIP SUTVARKYTA - sio archyvo taisykles":
+        "# HOW THIS ARCHIVE IS SORTED - the rules",
+    "Sutvarke programa **PHOTO home (FOTO namai)** (Claude's"
+    " Gifts to the World).":
+        "Sorted by **PHOTO home (FOTO namai)** (Claude's Gifts to the"
+        " World).",
+    "Atnaujinta: ": "Updated: ",
+    "## Taisykles": "## Rules",
+    "- Nuotraukos guli pagal data: `Metai\\Menuo` arba"
+    " `Metai\\Menuo Renginys` (renginio vardas - is originalaus"
+    " aplanko pavadinimo).":
+        "- Photos are placed by date: `Year\\Month` or"
+        " `Year\\Month Event` (the event name comes from the original"
+        " folder name).",
+    "- Kiekvienos nuotraukos data nustatyta sia tvarka: EXIF ->"
+    " failo vardas -> aplanko vardas -> failo mtime.":
+        "- Each photo's date was resolved in this order: EXIF -> file"
+        " name -> folder name -> file mtime.",
+    "- `%s` - ekrano nuotraukos (atpazintos be ML: nera"
+    " kameros EXIF + ekrano raiska / vardas); jos irgi skirstomos"
+    " pagal `Metai\\Menuo`, o be patikimos datos lieka saknyje.":
+        "- `%s` - screenshots (recognised without ML: no camera EXIF +"
+        " screen resolution / name); they are also filed by `Year\\Month`,"
+        " and those without a trustworthy date stay in the root.",
+    "- `%s` - failai, kuriu datos saltinis tik"
+    " mtime (kopijavimo pedsakas, ne fotografavimo data).":
+        "- `%s` - files whose only date source is mtime (a trace of"
+        " copying, not the date the photo was taken).",
+    "- SVARBU: `%s` yra DARBO ZONA, ne siukslynas. Failai joje"
+    " sveiki ir nepaliesti - tiesiog ju datu dar neissiaiskinom."
+    " Naujos programos versijos ismoksta nauju atpazinimo budu ir"
+    " parusiuoja sia lentyna is vidaus (pvz. `%s\\2015\\06`) -"
+    " prie siu failu dar bus griztama.":
+        "- IMPORTANT: `%s` is a WORK AREA, not a junk pile. The files in"
+        " it are intact and untouched - we simply have not worked out"
+        " their dates yet. Newer versions of the program learn new"
+        " recognition methods and sort this shelf from within (e.g."
+        " `%s\\2015\\06`) - these files will be revisited.",
+    "- Neatpazinto turinio failai (0 baitu, netikri .jpg) is"
+    " vietos NEJUDINTI.":
+        "- Files of unrecognised content (0 bytes, fake .jpg) were NOT"
+        " moved.",
+    "- Dublikatai (tas pats turinys) i archyva keliami TIK viena"
+    " karta.":
+        "- Duplicates (identical content) are placed into the archive"
+        " ONLY once.",
+    "## Statistika": "## Statistics",
+    "- `%s` - %d failu, %s": "- `%s` - %d files, %s",
+    "Is viso: **%d failu, %s**; praleista (dubliai/jau"
+    " buvo): %d.":
+        "In total: **%d files, %s**; skipped (duplicates/already"
+        " there): %d.",
+    "## Sia diena pries X metu": "## On this day, years ago",
+    "Sios dienos kadru turite is: %s.":
+        "You have shots from this day in: %s.",
+    "Pilna atsaukimo istorija - [UNDO_ZURNALAS.md]"
+    "(UNDO_ZURNALAS.md). Programoje mygtukas"
+    " \"UNDO - grazinti viska atgal\" veikia bet kada.":
+        "The full undo history is in [UNDO_ZURNALAS.md]"
+        "(UNDO_ZURNALAS.md). The \"UNDO - put everything back\" button"
+        " in the app works at any time.",
+    "# UNDO zurnalas - kas is kur atkeliavo":
+        "# UNDO log - what came from where",
+    "| Laikas | Rezimas | Is kur | I kur |":
+        "| Time | Mode | From | To |",
+    "(rodoma pirmi %d irasu; pilnas sarasas -"
+    " indeksas.db undo lenteleje)":
+        "(showing the first %d entries; the full list is in the undo"
+        " table of indeksas.db)",
+    # --- TELEFONAS (v1.0 VINIS, 2026-08-28): gidas + jungimas + kopija.
+    "ARBA leiskite programai padaryti tai PACIAI: atlikite"
+    " 1 zingsni (laidas + \"Failu perdavimas\"), UZDARYKITE"
+    " Explorer langa su telefonu (telefona vienu metu mato tik"
+    " viena programa) ir spauskite \"Jungti telefona\" -"
+    " programa pati suras nuotrauku vietas, nukopijuos ir"
+    " prides i saltinius. Is telefono TIK skaitoma - nieko"
+    " netrinam ir nerasom.":
+        "OR let the app do it ITSELF: do step 1 (cable + \"File"
+        " Transfer\"), CLOSE the Explorer window showing the phone"
+        " (only one app can see the phone at a time) and press"
+        " \"Connect the phone\" - the app will find the photo"
+        " locations, copy them and add the folder to the sources."
+        " The phone is READ-ONLY - nothing is deleted or written.",
+    "Jungti telefona": "Connect the phone",
+    "Ieskomas telefonas": "Looking for the phone",
+    "Telefono klaida: {}": "Phone error: {}",
+    "Rastas telefonas: {} ({} nuotrauku vietu)":
+        "Phone found: {} ({} photo locations)",
+    "Telefono kopija atsaukta.": "Phone copy cancelled.",
+    "Kopijuojama is telefono": "Copying from the phone",
+    "Telefonas baigtas: tiksle {} failu ({} praleista kaip jau turimi).":
+        "Phone done: {} files in the folder ({} skipped as already"
+        " there).",
+    "is telefono": "from the phone",
+    "Aplankas pridetas prie saltiniu - spauskite"
+    " \"Indeksuoti pazymetus\".":
+        "The folder was added to the sources - press \"Index"
+        " selected\".",
+    "Telefono nerandu": "Cannot see the phone",
+    "Nepavyko pamatyti telefono nuotrauku. Dazniausios"
+    " priezastys:\n\n"
+    "1. Telefonas neatsake i \"USB rezimas?\" klausima -\n"
+    "   pasirinkite \"Failu perdavimas\" (File Transfer)\n"
+    "   TELEFONO ekrane. Numatytasis buna \"tik krovimas\".\n"
+    "2. Telefona naudoja kita programa - uzdarykite Explorer\n"
+    "   langa su telefonu ir bandykite dar karta (telefona\n"
+    "   vienu metu mato tik viena programa).\n"
+    "3. Ekranas uzrakintas - atrakinkite ir perkiskite laida.\n"
+    "4. Laidas tik krovimo - pabandykite kita laida.\n"
+    "5. Senas telefonas gali apsimesti CD-ROM ir siulyti\n"
+    "   diegti savo programa - nediekite, tiesiog perkiskite\n"
+    "   laida i kita lizda.":
+        "Could not see the phone's photos. Most common reasons:\n\n"
+        "1. The phone did not answer the \"USB mode?\" question -\n"
+        "   choose \"File Transfer\" on the PHONE screen. The\n"
+        "   default is usually \"charging only\".\n"
+        "2. Another program is using the phone - close the Explorer\n"
+        "   window showing the phone and try again (only one app\n"
+        "   can see the phone at a time).\n"
+        "3. The screen is locked - unlock it and replug the cable.\n"
+        "4. The cable is charge-only - try another cable.\n"
+        "5. An old phone may pretend to be a CD-ROM and offer its\n"
+        "   own software - do not install it, just replug the cable\n"
+        "   into another port.",
+    "Klausti DI": "Ask AI",
+    "Paimti is telefono": "Take from the phone",
+    "Telefonas: {}": "Phone: {}",
+    "Ka kopijuoti (rastos nuotrauku vietos):":
+        "What to copy (photo locations found):",
+    "elementu": "items",
+    "I kuri aplanka kompiuteryje:": "Into which folder on the computer:",
+    "Parinkti...": "Browse...",
+    "Is telefono TIK skaitoma - originalai"
+    " jame lieka nepaliesti.":
+        "The phone is READ-ONLY - the originals on it stay untouched.",
+    "Kopijuojama: {}": "Copying: {}",
+    "nukopijuota {}, praleista {}": "copied {}, skipped {}",
+    "baigiama... tiksle {} failu": "finishing... {} files in the folder",
+    "Telefonas dingo kopijos metu: {}":
+        "The phone disappeared during the copy: {}",
+    "Kopija nutraukta - dalis failu jau"
+    " kompiuteryje, telefonas nepaliestas.":
+        "Copy cancelled - some files are already on the computer,"
+        " the phone was not touched.",
+    "Kopija nutruko be rezultato -"
+    " patikrinkite laida ir bandykite"
+    " dar karta.":
+        "The copy stopped without a result - check the cable and try"
+        " again.",
 }
 
 

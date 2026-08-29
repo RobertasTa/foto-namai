@@ -2,10 +2,12 @@
      Claude sprendimas 2026-08-13): repo „foto-namai", rodomas vardas
      „FOTO namai" abiem kalbom; Google'ui dirba angliškas paantraštės
      sakinys + topics (photo-organizer, photo-archive, exif, windows).
-     Prieš publikuojant: (1) skrinai — daryti TIK release dieną iš
-     release exe (BUILD.md); (2) „Klausk DI" formuluotė — aptarti su
-     Robertu (jis žadėjo grįžti); (3) Releases nuorodos atgis sukūrus
-     repo RobertasTa/foto-namai. -->
+     v1.0 RUOŠINYS 2026-08-29 (guli iki tylaus starto).
+     Prieš publikuojant: (1) skrinai — TIK release dieną iš release
+     exe (BUILD.md), įskaitant rentgeno langą ir kartotekos tinklelį
+     be disko; (2) galutinis buildas + sha256 + zip; (3) telefonas iš
+     exe — vienas gyvas patikrinimas; (4) VirusTotal + SmartScreen
+     pastaba release notes; (5) Releases nuorodos atgis paskelbus. -->
 
 # PHOTO home (FOTO namai)
 
@@ -67,21 +69,50 @@ thumbnail grid; double-click opens the file in Explorer.
 **Tier B — the move (only when you press the button).** The program
 analyzes the index and proposes a clean structure — `Year\Month` for
 everything it is sure about, `2015\06 Midsummer` where a folder name
-told it the event, screenshots to their own folder, and files with
-unreliable dates to a separate `_NEPATIKIMOS_DATOS` folder instead of
-being silently mixed into your timeline. You review the plan, tick what
+told it the event, screenshots to their own `_SCREENSHOTS` folder, and
+files with unreliable dates to a separate `_UNDATED` folder instead of
+being silently mixed into your timeline — a work zone, not a junkyard:
+newer versions keep refining it in place. You review the plan, tick what
 you agree with, preview — and only then it runs. The archive root gets
 two human-readable files: `KAIP_SUTVARKYTA.md` (what rules were applied)
 and `UNDO_ZURNALAS.md` (what came from where).
 
 ## Features
 
-- **Honest dates — the core.** Date sources are ranked (camera EXIF →
-  file name like `IMG-20230318-WA0006.jpg` → folder name like
-  "Midsummer 2015" → file modification time), the winning source is
-  recorded for every file, and an unreliable date is *labeled*
-  unreliable. Competitors put your 2015 photos into a 2026 folder
-  without a word — see the test table below.
+- **Honest dates — the core.** Date sources are ranked (camera EXIF —
+  including its backup fields and PNG-internal dates → file name like
+  `IMG-20230318-WA0006.jpg` → folder name like "Midsummer 2015" → file
+  modification time → and, new in v1.0, the file's *surroundings*: a
+  homogeneous folder or an arrival batch lends its median date, clearly
+  labeled as a guess). The winning source is recorded for every file,
+  and an unreliable date is *labeled* unreliable. Competitors put your
+  2015 photos into a 2026 folder without a word — see the test table
+  below.
+- **Phone import over the cable (new in v1.0).** Plug in an Android
+  phone, pick "File Transfer" — the program finds the photo locations
+  itself (not only DCIM: WhatsApp and screenshots too), copies them to
+  your disk and **never writes a byte to the phone**. The second run
+  skips everything it already took. iPhone is untested and honestly
+  listed as a known limitation.
+- **Archive X-ray (new in v1.0).** Every indexing run ends with a
+  report you can save and share: how many files and where, where their
+  dates come from, how much lacks a reliable date — and your **line in
+  time** (*"from ~2009 your dates are reliable"*). Nothing moves; the
+  answer arrives in minutes.
+- **Card file: see photos while the drive sits in a drawer (new in
+  v1.0).** Thumbnails of everything indexed stay inside the program and
+  show up in search even for unplugged shelves — pick with your eyes,
+  then plug in the one drive that matters. The simple free browsers
+  don't do this. A background worker fills the card file by itself.
+- **Open in your own editor (new in v1.0).** Right-click a result →
+  "Open with Photoshop" (or Corel, or Paint — you define the list in a
+  simple settings file with an example inside). The program never edits
+  anything itself — your originals stay yours.
+- **Big archives are first-class — measured, not promised.** A real
+  931 GB USB drive with 58 665 photos and videos: first indexing
+  ~12 minutes, later runs ~2 minutes (only changes are re-read). A
+  synthetic 500 000-file archive: ~20 minutes, flat speed, sub-second
+  search. Network (NAS) folders are recognized as shelves too.
 - **Shelves: many disks, one index — even unplugged.** Every storage
   (internal disk, USB drive, memory stick, NAS folder) becomes a named
   "shelf" — you christen it yourself ("Red WD", "Mom's stick"). Search
@@ -128,7 +159,9 @@ and `UNDO_ZURNALAS.md` (what came from where).
 We built a 67-file test polygon with known ground truth (EXIF vs fresh
 mtime conflicts, WhatsApp names, screenshots, duplicates, corrupted-EXIF
 and fake-extension traps) and ran the free competition and ourselves on
-identical copies. Full protocol and raw logs are in the repository.
+identical copies. The full protocol, per-tool notes and reproduction
+steps are in [docs/COMPETITOR_TESTS.md](docs/COMPETITOR_TESTS.md); the
+polygon generator (`poligonas_gen.py`) ships in this repository.
 
 | Criterion | MRImageSorter 0.20 | PhotoMove 2.5 Free | FOTO namai |
 |---|---|---|---|
@@ -143,6 +176,13 @@ identical copies. Full protocol and raw logs are in the repository.
 | Viewer / editor built in | ❌ | ❌ | ❌ **by design** — use your favourite gallery |
 | Price / ads | free alpha | $8.99 for the essentials | free, no ads |
 
+We also ran the popular CLI organizers on the same polygon (details in
+[docs/COMPETITOR_TESTS.md](docs/COMPETITOR_TESTS.md)): **phockup
+46/67**, **elodie 47/67** — elodie *invented* a 2026 date for 20
+undated files and filed them there — and OrganizeMediaFiles did not
+start on Windows at all. All of them are ExifTool wrappers; none has
+an UNDO.
+
 Honest footnote: these are the small free tools in our own niche. The
 heavyweight in the neighbourhood is **digiKam** — free and far more
 featureful; if it fits you, use it with our blessing. Our trade is
@@ -152,7 +192,7 @@ and safety rails a non-technical person can trust.
 ## Download
 
 Grab the latest zip from **[Releases](../../releases)**: unpack anywhere,
-run `FotoNamai.exe`. No installation.
+run `PhotoHome.exe`. No installation.
 
 **Requirements:** Windows 10 or newer, 64-bit (a hard Qt6/Python
 toolchain limit — Windows 7/8 will not start).
@@ -168,12 +208,12 @@ toolchain limit — Windows 7/8 will not start).
 > [BUILD.md](BUILD.md). That is the honest advantage of an open-source
 > gift.
 
-Working data lives in `%LOCALAPPDATA%\FotoNamai`; for portable use put
-an empty `FotoNamai_portable.txt` next to the exe and everything travels
+Working data lives in `%LOCALAPPDATA%\PhotoHome`; for portable use put
+an empty `PhotoHome_portable.txt` next to the exe and everything travels
 with your stick.
 
-Plain-text guides: [README.txt](README.txt) (LT) ·
-[README-en.txt](README-en.txt) (EN)
+Plain-text guides: [README.txt](foto_namai/README.txt) (LT) ·
+[README-en.txt](foto_namai/README-en.txt) (EN)
 
 ## The gift family
 

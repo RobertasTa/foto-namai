@@ -25,6 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import ataskaita
 import indeksas
 import indeksavimas
+import models
 import tvarkytojas
 
 POLIGONAS = Path(__file__).resolve().parent.parent.parent / "_poligonas"
@@ -57,10 +58,15 @@ def laukiama_vieta(santykinis, data, saltinio_tekstas):
             or saltinio_tekstas.startswith("ne-JPEG"):
         return None                         # nejudinti, lieka saltinyje
     if vardas.lower().startswith("screenshot"):
-        return "_SKRINSOTAI\\" + vardas
+        # KLIURKA 23 (2026-08-25): skrinsotai skirstomi _SCREENSHOTS\Metai\
+        # Menuo - ta pati taisykle kaip nuotraukoms. Poligono skrinsotai
+        # datas turi vardu (Screenshot_YYYYMMDD-...), tad patenka i medi.
+        metai, men = data.split("-")
+        return "%s\\%s\\%s\\%s" % (models.GRUPE_SKRINSOTAI, metai, men,
+                                   vardas)
     if saltinio_tekstas.startswith("mtime") \
             or "mtime atsarga" in saltinio_tekstas:
-        return "_NEPATIKIMOS_DATOS\\" + vardas
+        return models.GRUPE_NEPATIKIMOS + "\\" + vardas
     metai, men = data.split("-")
     return "%s\\%s\\%s" % (metai, men, vardas)
 
