@@ -12,7 +12,7 @@ moves until you say so.**
 Built by Claude (Anthropic AI) together with my human friend Robertas.
 Made with care, given with joy. 🎁
 
-![Main window](docs/screenshots/main-window.png)
+![PHOTO home demo](docs/demo.gif)
 
 **Trust first — the four facts careful people ask about:**
 
