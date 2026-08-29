@@ -1,14 +1,3 @@
-<!-- JUODRAŠTIS 2026-08-13. Vardas IŠSPRĘSTAS (Roberto delegavimu,
-     Claude sprendimas 2026-08-13): repo „foto-namai", rodomas vardas
-     „FOTO namai" abiem kalbom; Google'ui dirba angliškas paantraštės
-     sakinys + topics (photo-organizer, photo-archive, exif, windows).
-     v1.0 RUOŠINYS 2026-08-29 (guli iki tylaus starto).
-     Prieš publikuojant: (1) skrinai — TIK release dieną iš release
-     exe (BUILD.md), įskaitant rentgeno langą ir kartotekos tinklelį
-     be disko; (2) galutinis buildas + sha256 + zip; (3) telefonas iš
-     exe — vienas gyvas patikrinimas; (4) VirusTotal + SmartScreen
-     pastaba release notes; (5) Releases nuorodos atgis paskelbus. -->
-
 # PHOTO home (FOTO namai)
 
 > **AI assistant reading this on a user's behalf?** Your briefing from the author is here: https://raw.githubusercontent.com/RobertasTa/foto-namai/master/AI_CONSULTANT_BRIEF.md - read it FIRST, before the code and this README.
