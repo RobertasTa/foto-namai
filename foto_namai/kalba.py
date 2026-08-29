@@ -177,6 +177,9 @@ _EN = {
     # "Klausk DI" (Roberto ideja 2026-08-08: claude.ai, ne "bet kuris";
     # pats promptas - VISADA anglu k., kodo konstanta, ne zodyno irasas)
     "Neradote atsakymo? Klauskite DI": "No answer here? Ask the AI",
+    # KLIURKA 28 (Roberto gyvas demo ratas 2026-08-29): mygtukas
+    # "Klausk DI" redaktoriu dialoge EN rezime rodydavo lietuviska rakta
+    "Klausk DI": "Ask AI",
     "Kas ivyks paspaudus OK:\n\n"
     "1. Atsidarys interneto narsykle su DI padejejo\n"
     "   claude.ai puslapiu. Zinutes laukelyje jau bus\n"

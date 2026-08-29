@@ -66,6 +66,13 @@ resolves dates and builds an index (one SQLite file). Search works
 immediately: by date, type, event label, camera or file name, with a
 thumbnail grid; double-click opens the file in Explorer.
 
+Every indexing run ends with the **Archive X-ray** — what you have,
+where the dates come from, and your line in time:
+
+![Archive X-ray](docs/screenshots/archive-xray.png)
+
+![Search with thumbnail grid](docs/screenshots/search-grid.png)
+
 **Tier B — the move (only when you press the button).** The program
 analyzes the index and proposes a clean structure — `Year\Month` for
 everything it is sure about, `2015\06 Midsummer` where a folder name
@@ -76,6 +83,8 @@ newer versions keep refining it in place. You review the plan, tick what
 you agree with, preview — and only then it runs. The archive root gets
 two human-readable files: `KAIP_SUTVARKYTA.md` (what rules were applied)
 and `UNDO_ZURNALAS.md` (what came from where).
+
+![Home archive proposal](docs/screenshots/proposal-dialog.png)
 
 ## Features
 

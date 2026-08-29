@@ -18,7 +18,7 @@ import sys
 from datetime import date
 from pathlib import Path
 
-from PyQt6.QtCore import QSize, Qt, QThread, QTimer
+from PyQt6.QtCore import QSize, QStandardPaths, Qt, QThread, QTimer
 from PyQt6.QtGui import QColor, QFont, QIcon, QPainter, QPixmap
 from PyQt6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog,
                              QDialogButtonBox, QFileDialog, QFrame,
@@ -1363,8 +1363,15 @@ class MainWindow(QMainWindow):
     def _rentgena_saugoti(self, tekstas):
         """Rentgeno .md issaugojimas ten, kur zmogus pasirinks
         (dalinamasis - r/DataHoarder gyvena stat skrinais)."""
+        # KLIURKA 27 (Roberto gyvas ratas 2026-08-29): vien failo vardas
+        # be katalogo dialoga atidarydavo darbo kataloge (exe atveju -
+        # programos viduriuose). Numatytoji vieta - Documents.
+        dok = QStandardPaths.writableLocation(
+            QStandardPaths.StandardLocation.DocumentsLocation) \
+            or str(Path.home())
         kelias, _ = QFileDialog.getSaveFileName(
-            self, t("Issaugoti ataskaita..."), "KAS_TAVO_ARCHYVE.md",
+            self, t("Issaugoti ataskaita..."),
+            str(Path(dok) / "KAS_TAVO_ARCHYVE.md"),
             "Markdown (*.md)")
         if not kelias:
             return
