@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="google-site-verification" content="ngCuEME8a9C8od6O7mw1EHMId6BzZqJE9-xi-NIyy-Y" />
+<title>PHOTO home — an honest home photo archive organizer</title>
+<meta name="description" content="Free, open-source photo archive organizer for Windows. Catalogs the family photo chaos on your disks, tells you when photos were really taken, organizes into Year\Month with full UNDO. Never deletes anything. Offline, no ads, no telemetry.">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="icon" href="favicon.ico" sizes="any">
+<meta property="og:title" content="PHOTO home">
+<meta property="og:description" content="Puts a lifetime of photos in order. Nothing moves until you say so.">
+<meta property="og:image" content="https://robertasta.github.io/foto-namai/social-preview.png">
+<meta property="og:type" content="website">
+<style>
+  :root{
+    --bg:#010d24; --bg2:#06173a; --card:#0b1f47;
+    --text:#f5f7fc; --muted:#bcc4d6; --amber:#e8b84b; --line:#1d3560;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:"Segoe UI",system-ui,sans-serif;line-height:1.6}
+  a{color:var(--amber)}
+  .wrap{max-width:860px;margin:0 auto;padding:0 20px}
+  header{padding:56px 0 40px;text-align:center}
+  header img.icon{width:96px;height:96px;margin-bottom:18px}
+  h1{font-size:2.4rem;font-weight:700;letter-spacing:.5px}
+  .tagline{font-size:1.25rem;color:var(--muted);margin-top:10px}
+  .amber{color:var(--amber);font-style:italic;margin-top:8px}
+  .actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:30px 0 8px}
+  .btn{display:inline-block;padding:12px 26px;border-radius:8px;font-weight:600;text-decoration:none}
+  .btn-amber{background:var(--amber);color:#1a1200}
+  .btn-ghost{border:1px solid var(--line);color:var(--text)}
+  section{padding:36px 0;border-top:1px solid var(--line)}
+  h2{font-size:1.4rem;margin-bottom:18px}
+  .demo img{width:100%;max-width:820px;display:block;margin:0 auto;border-radius:10px;border:1px solid var(--line)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px}
+  .card h3{font-size:1.02rem;margin-bottom:6px}
+  .card p{color:var(--muted);font-size:.95rem}
+  .shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+  .shots img{width:100%;border-radius:8px;border:1px solid var(--line)}
+  .ask{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:24px}
+  .ask p{color:var(--muted)}
+  footer{padding:36px 0 48px;text-align:center;color:var(--muted);font-size:.92rem;border-top:1px solid var(--line)}
+  footer .sig{color:var(--amber);font-style:italic;margin-top:6px}
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <img class="icon" src="icon-96.png" alt="PHOTO home icon">
+  <h1>PHOTO home</h1>
+  <p class="tagline">Puts a lifetime of photos in order.</p>
+  <p class="amber">Nothing moves until you say so. Nothing is ever deleted.</p>
+  <div class="actions">
+    <a class="btn btn-amber" href="https://github.com/RobertasTa/foto-namai/releases/latest">Download for Windows</a>
+    <a class="btn btn-ghost" href="https://github.com/RobertasTa/foto-namai">View source on GitHub</a>
+  </div>
+</header>
+
+<section class="wrap demo">
+  <img src="demo.gif" alt="Demo: indexing a folder, naming a shelf, the Archive X-ray report, searching with thumbnails, reviewing the archive proposal, full UNDO">
+</section>
+
+<section class="wrap">
+  <h2>What it does</h2>
+  <div class="grid">
+    <div class="card"><h3>An honest catalog first</h3><p>Check folders or disks — the program only READS them and builds an index. Search by date, event, camera or name, with a thumbnail grid that works even when the drive sits unplugged in a drawer.</p></div>
+    <div class="card"><h3>Archive X-ray</h3><p>Every indexing run ends with a saveable report: what you have, where your dates come from, how much lacks a reliable date — and your line in time (&ldquo;from ~2009 your dates are reliable&rdquo;).</p></div>
+    <div class="card"><h3>Honest dates</h3><p>Camera EXIF → file name → folder name → modification time with an explicit &ldquo;unreliable&rdquo; label. Competitors silently file undated photos into today; this program labels them and keeps a separate _UNDATED work zone.</p></div>
+    <div class="card"><h3>Organizing is opt-in — with UNDO</h3><p>Press the button and it proposes a Year\Month plan with event labels. You review, default is COPY, every action lands in an UNDO journal with one-click rollback. On our 67-file ground-truth polygon: 67/67 vs 34 and 38 for the free competition.</p></div>
+    <div class="card"><h3>Phone import over the cable</h3><p>Android via USB: finds photo locations itself (DCIM, WhatsApp, screenshots), copies to your disk, never writes a byte to the phone. Second run skips what it already took.</p></div>
+    <div class="card"><h3>Shelves: many disks, one index</h3><p>Every drive becomes a named shelf you christen yourself. Search answers even for unplugged disks; drive letters may change — shelves are recognized by the volume's serial.</p></div>
+    <div class="card"><h3>Free & open source</h3><p>GPL v3, fully offline: no cloud, no telemetry, no accounts, no ads. English and Lithuanian UI. An experimental macOS preview ships with the release.</p></div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>See it in action</h2>
+  <div class="shots">
+    <img src="screenshots/main-window.png" alt="Main window with sources and estimate">
+    <img src="screenshots/archive-xray.png" alt="Archive X-ray report with the line in time">
+    <img src="screenshots/search-grid.png" alt="Search with thumbnail grid">
+    <img src="screenshots/proposal-dialog.png" alt="Home archive proposal you review before anything moves">
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>Stuck? Ask the AI that wrote it</h2>
+  <div class="ask">
+    <p>This program was written by Claude (an AI by Anthropic) as a gift, with live testing by Robertas — a furniture designer, not a programmer. Because the code is open, you can ask Claude about it directly: the <b>&ldquo;?&rdquo; menu</b> in the app explains how. When did a program's author last offer to help you change it to your liking?</p>
+  </div>
+</section>
+
+<footer class="wrap">
+  <p><a href="https://github.com/RobertasTa/foto-namai">GitHub</a> ·
+     <a href="https://github.com/RobertasTa/foto-namai/releases/latest">Releases</a> ·
+     <a href="https://github.com/RobertasTa/foto-namai/blob/master/LICENSE">GPL v3</a></p>
+  <p class="sig">A gift from Claude &amp; Robertas</p>
+</footer>
+
+</body>
+</html>
