@@ -8,14 +8,76 @@ pervadinti saugu bet kada - tapatybe ant serial. Zero Qt.
 import ctypes
 import os
 import shutil
+import sys
 from pathlib import Path
 
 from kalba import t
+
+# --- macOS saka (2026-08-29, Roberto "darom ir mak"): tapatybe ne is
+# GetVolumeInformationW (jo ten nera), o is diskutil VolumeUUID. Windows
+# kelias zemiau NEPALIESTAS. Gyvai ant tikro Mac dar netikrinta - pirmas
+# teisejas bus macos_zvalgyba workflow + gyvas Mac testuotojas.
+
+
+def _mount_point(kelias):
+    """Kelio tomo mount point (kylame tevais iki os.path.ismount)."""
+    p = Path(kelias).resolve()
+    while not os.path.ismount(str(p)):
+        if p.parent == p:
+            break
+        p = p.parent
+    return p
+
+
+def _diskutil_plist(mount):
+    import plistlib
+    import subprocess
+    try:
+        r = subprocess.run(["diskutil", "info", "-plist", str(mount)],
+                           capture_output=True, timeout=15)
+        if r.returncode != 0 or not r.stdout:
+            return None
+        return plistlib.loads(r.stdout)
+    except Exception:
+        return None
+
+
+def _volume_info_darwin(kelias):
+    d = _diskutil_plist(_mount_point(kelias))
+    if not d:
+        return (None, None, None)
+    uuid = d.get("VolumeUUID") or d.get("DiskUUID")
+    fs = d.get("FilesystemUserVisibleName") or d.get("FilesystemType")
+    return (uuid, d.get("VolumeName") or None, fs or None)
+
+
+def _disko_tipas_darwin(kelias):
+    mount = _mount_point(kelias)
+    d = _diskutil_plist(mount)
+    if not d:
+        # diskutil tinklo mountu nepazista - fs tipa sako statvfs/mount
+        try:
+            import subprocess
+            r = subprocess.run(["mount"], capture_output=True, text=True,
+                               timeout=10)
+            eil = [e for e in r.stdout.splitlines()
+                   if " on %s (" % mount in e]
+            if eil and any(x in eil[0] for x in
+                           ("smbfs", "afpfs", "nfs", "webdav")):
+                return "network"
+        except Exception:
+            pass
+        return "kitas"
+    if d.get("Internal") and not d.get("Ejectable"):
+        return "fixed"
+    return "removable"
 
 
 def volume_info(kelias):
     """Grazina (serial_hex, etikete, fs) tomo, kuriame guli kelias.
     Nepavyko (pvz., UNC be teisiu) -> (None, None, None)."""
+    if sys.platform == "darwin":
+        return _volume_info_darwin(kelias)
     root = Path(kelias).anchor
     if not root:
         return (None, None, None)
@@ -80,6 +142,8 @@ def disko_tipas(kelias):
     Roberto verdiktas 2026-08-07: krikstynu dialogas turi prasme TIK
     isimamiems/isoriniams diskams - vidiniam kompiuterio diskui vardas
     sudaromas automatiskai (nuo 2026-08-08 su patvirtinimo dialogu)."""
+    if sys.platform == "darwin":
+        return _disko_tipas_darwin(kelias)
     root = Path(kelias).anchor
     if not root:
         return "kitas"
@@ -99,8 +163,14 @@ def disko_tipas(kelias):
 
 def autovardas_vidinis(kelias):
     """Vidinio disko autovardas be dialogu: 'KOMPOVARDAS diskas C:'."""
-    kompas = os.environ.get("COMPUTERNAME") or "PC"
-    raide = Path(kelias).anchor.rstrip("\\/")
+    kompas = os.environ.get("COMPUTERNAME")
+    if not kompas:
+        import platform
+        kompas = platform.node().split(".")[0] or "PC"
+    if sys.platform == "darwin":
+        raide = _mount_point(kelias).name or "/"
+    else:
+        raide = Path(kelias).anchor.rstrip("\\/")
     if not raide:
         return kompas[:40]
     return t("{} diskas {}").format(kompas, raide)[:40]
@@ -111,6 +181,9 @@ def siulomas_vardas(kelias):
     serial, etikete, _ = volume_info(kelias)
     if etikete:
         return etikete[:40]
+    if sys.platform == "darwin":
+        vardas = _mount_point(kelias).name
+        return (vardas[:40] if vardas else "Lentyna")
     root = Path(kelias).anchor.rstrip("\\/")
     if root:
         return ("Diskas " + root)[:40]

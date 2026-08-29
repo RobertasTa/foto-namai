@@ -45,6 +45,25 @@ _KELIO_ROLE = Qt.ItemDataRole.UserRole
 _IVERCIO_ROLE = Qt.ItemDataRole.UserRole + 1
 
 
+# --- macOS saka (2026-08-29): os.startfile ir explorer yra Windows-only.
+# Platformu riba VIENOJE vietoje (SDF pamoka) - visi kvietimai eina per
+# siuos du helperius.
+def _atverti_os(kelias):
+    """Failas OS numatyta programa (Windows startfile / macOS open)."""
+    if sys.platform == "darwin":
+        subprocess.Popen(["open", str(kelias)])
+    else:
+        os.startfile(str(kelias))
+
+
+def _parodyti_tvarkykleje(kelias):
+    """Parodyti faila su pazymejimu (Explorer /select / Finder open -R)."""
+    if sys.platform == "darwin":
+        subprocess.Popen(["open", "-R", str(kelias)])
+    else:
+        subprocess.Popen(["explorer", "/select,", str(kelias)])
+
+
 # KLIURKA 17 (Roberto laptopo ratas 2026-08-25): Qt STANDARTINIU mygtuku
 # teksta duoda pats Qt, o lietuvisku Qt vertimu pakete NERA - lietuviskuose
 # languose kabojo "Close", "OK", "Cancel", "Yes", "No". Rasta 5 vietose is
@@ -343,6 +362,18 @@ class MainWindow(QMainWindow):
         self._btn_undo.clicked.connect(self._undo_start)
         eilute2.addWidget(self._btn_undo)
         eilute2.addStretch(1)
+        if sys.platform == "darwin":
+            # macOS SAUGIKLIS (2026-08-29): B pakopa kilnoja ORIGINALUS,
+            # o Mac buildas dar ne karto nematytas gyvai - iki pirmo gyvo
+            # Mac testuotojo tvarkymas uzrakintas; A pakopa (indeksas,
+            # paieska, rentgenas) nieko nekeicia ir veikia pilnai.
+            uzrakto_tekstas = t(
+                "macOS beta: tvarkymas isjungtas, kol neturime gyvo Mac"
+                " testuotojo - katalogas ir paieska veikia pilnai.")
+            self._btn_archyvas.setEnabled(False)
+            self._btn_undo.setEnabled(False)
+            self._btn_archyvas.setToolTip(uzrakto_tekstas)
+            self._btn_undo.setToolTip(uzrakto_tekstas)
 
         # Kalbos combobox iskeltas i virsu prie "?" (Roberto pastaba
         # 2026-08-13); portable varneles GUI NEBERA (Roberto verdiktas
@@ -1740,7 +1771,7 @@ class MainWindow(QMainWindow):
         r = it.data(_KELIO_ROLE)
         kelias = self._rezultato_kelias(r)
         if kelias is not None and kelias.exists():
-            subprocess.Popen(["explorer", "/select,", str(kelias)])
+            _parodyti_tvarkykleje(kelias)
         else:
             self._pranesti_neprieinama(r, kelias)
 
@@ -1783,7 +1814,7 @@ class MainWindow(QMainWindow):
             return
         if dlg.standardButton(pasp) == QMessageBox.StandardButton.Ok:
             ini = redaktoriai.uztikrinti_faila()
-            os.startfile(str(ini))
+            _atverti_os(ini)
             self._log(t("Redaktoriu failas: {}").format(ini))
 
     def _rezultatu_meniu(self, pozicija):
@@ -1828,9 +1859,9 @@ class MainWindow(QMainWindow):
                     klaida))
             return
         if pasirinktas == a_perziura:
-            os.startfile(str(kelias))
+            _atverti_os(kelias)
         else:
-            subprocess.Popen(["explorer", "/select,", str(kelias)])
+            _parodyti_tvarkykleje(kelias)
 
     def _issaugoti_vaizda(self):
         filtrai = self._p_filtrai()

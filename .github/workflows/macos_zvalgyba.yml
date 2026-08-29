@@ -1,0 +1,114 @@
+# Ar PHOTO home apskritai gyva macOS? RANKINE zvalgyba, ne kasdienis CI
+# (SDF macos_zvalgyba.yml receptas, pritaikytas 2026-08-29).
+#
+# Paleidziama tik ranka (workflow_dispatch). Klausimai:
+#   1. ar priklausomybes issidiegia (PyQt6, Pillow, pillow-heif, piexif);
+#   2. kiek is patikru prazysta be pakeitimu (darwin sakos: lentynos
+#      diskutil, saugykla Application Support, open/open -R, B pakopos
+#      uzraktas);
+#   3. ar langas susikuria ir ji galima nufotografuoti;
+#   4. ar PyInstaller sukuria .app.
+# Nieko neskelbia ir nieko nekeicia programoje. B pakopa macOS uzrakinta
+# kode iki gyvo Mac testuotojo.
+name: macOS zvalgyba
+
+on:
+  workflow_dispatch:
+
+jobs:
+  zvalgyba:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 1. Priklausomybes
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller
+          python -c "import PyQt6, PIL, piexif; print('importai OK')"
+          python -c "import pillow_heif; print('pillow_heif OK')" || echo "pillow_heif NEPAVYKO (HEIC neveiktu)"
+
+      - name: 2. Patikros (kiek prazysta be pakeitimu)
+        continue-on-error: true
+        env:
+          QT_QPA_PLATFORM: offscreen
+          FOTONAMAI_LANG: en
+        run: |
+          cd foto_namai
+          PASS=0; FAIL=0; FAILED=""
+          for f in _patikros/patikra_*.py; do
+            if python "$f" > /tmp/patikra.log 2>&1; then
+              PASS=$((PASS+1))
+            else
+              FAIL=$((FAIL+1)); FAILED="$FAILED $f"
+              echo "--- KRITO: $f ---"; tail -5 /tmp/patikra.log
+            fi
+          done
+          echo "=================================="
+          echo "PASS=$PASS FAIL=$FAIL"
+          echo "FAILED:$FAILED"
+
+      - name: 3. Ar langas susikuria ir ar ji galima nufotografuoti
+        continue-on-error: true
+        env:
+          QT_QPA_PLATFORM: offscreen
+          FOTONAMAI_LANG: en
+        run: |
+          cd foto_namai
+          python - <<'PY'
+          import sys, traceback
+          try:
+              from PyQt6.QtWidgets import QApplication
+              app = QApplication(sys.argv)
+              import gui_langas
+              w = gui_langas.MainWindow(testinis=True)
+              w.resize(1280, 800)
+              w.show()
+              app.processEvents()
+              pix = w.grab()
+              ok = pix.save("../macos_langas.png")
+              print("LANGAS SUSIKURE, skrinsotas issaugotas:", ok)
+              print("dydis:", pix.width(), "x", pix.height())
+              print("B pakopos uzraktas:",
+                    "UZRAKINTA" if not w._btn_archyvas.isEnabled()
+                    else "ATRAKINTA (BLOGAI!)")
+          except Exception:
+              traceback.print_exc()
+              print("LANGAS NESUSIKURE")
+          PY
+
+      - name: 4. PyInstaller .app + archyvas
+        continue-on-error: true
+        run: |
+          pyinstaller --noconfirm --clean --windowed --name PhotoHome \
+            --osx-bundle-identifier com.robertasta.photohome \
+            --paths foto_namai \
+            --add-data "foto_namai/zinynas_vietos.json:." \
+            --add-data "foto_namai/README.txt:." \
+            --add-data "foto_namai/README-en.txt:." \
+            foto_namai/main.py 2>&1 | tail -15
+          echo "--- kas gavosi ---"
+          ls -la dist/ || true
+          if [ -d "dist/PhotoHome.app" ]; then
+            ditto -c -k --sequesterRsrc --keepParent \
+              "dist/PhotoHome.app" "PhotoHome-macOS-zvalgyba.zip"
+            shasum -a 256 PhotoHome-macOS-zvalgyba.zip
+            ls -la PhotoHome-macOS-zvalgyba.zip
+          else
+            echo ".app NESUKURTAS"
+          fi
+
+      - name: Rezultatai
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-zvalgyba
+          path: |
+            macos_langas.png
+            PhotoHome-macOS-zvalgyba.zip
+          if-no-files-found: warn
+          retention-days: 7

@@ -180,6 +180,11 @@ _EN = {
     # KLIURKA 28 (Roberto gyvas demo ratas 2026-08-29): mygtukas
     # "Klausk DI" redaktoriu dialoge EN rezime rodydavo lietuviska rakta
     "Klausk DI": "Ask AI",
+    # macOS saugiklis (2026-08-29): B pakopa uzrakinta iki gyvo Mac testuotojo
+    "macOS beta: tvarkymas isjungtas, kol neturime gyvo Mac testuotojo"
+    " - katalogas ir paieska veikia pilnai.":
+        "macOS beta: organizing is disabled until we have a live Mac"
+        " tester - the catalog and search work in full.",
     "Kas ivyks paspaudus OK:\n\n"
     "1. Atsidarys interneto narsykle su DI padejejo\n"
     "   claude.ai puslapiu. Zinutes laukelyje jau bus\n"

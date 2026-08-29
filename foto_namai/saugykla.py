@@ -35,11 +35,19 @@ def is_portable():
     return (exe_dir() / PORTABLE_MARKER).exists()
 
 
+def _sistemos_baze():
+    """OS vartotojo duomenu bazine vieta (macOS zvalgyba 2026-08-29:
+    ten LOCALAPPDATA nera - naudojama Application Support)."""
+    if sys.platform == "darwin":
+        return str(Path.home() / "Library" / "Application Support")
+    return os.environ.get("LOCALAPPDATA")
+
+
 def data_dir():
     """Darbiniu failu katalogas pagal rezima (nekuriamas - kuria rasytojai)."""
     if is_portable():
         return exe_dir() / "_darbal"
-    base = os.environ.get("LOCALAPPDATA")
+    base = _sistemos_baze()
     if base:
         return Path(base) / APP_DIRNAME
     return exe_dir() / "_darbal"   # atsarga sistemoms be LOCALAPPDATA
@@ -68,7 +76,7 @@ def set_portable(on):
                 shutil.move(str(f), str(nauja / f.name))
         if on:
             # Pedsaku valymas: programa pati po saves susitvarko
-            base = os.environ.get("LOCALAPPDATA")
+            base = _sistemos_baze()
             if base:
                 shutil.rmtree(Path(base) / APP_DIRNAME, ignore_errors=True)
         else:
