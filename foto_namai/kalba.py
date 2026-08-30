@@ -12,6 +12,11 @@ Nauja kalba ateityje = zodynas + eilute combobox'e. Zero Qt priklausomybiu.
 import os
 from pathlib import Path
 
+# 2026-08-30: nuo dvieju kalbu iki keturiu (Roberto nuostata - kiekviena
+# dovana gimsta su LT/EN/RU/DE, kaip SDF). LT yra raktu kalba, todel
+# atskiro zodyno neturi.
+KALBOS = ("lt", "en", "ru", "de")
+
 
 def _issaugota_kalba():
     """Skaito GUI pasirinkima is kalba.txt (saugyklos data_dir)."""
@@ -19,7 +24,7 @@ def _issaugota_kalba():
         import saugykla
         v = (saugykla.data_dir() / "kalba.txt").read_text(
             encoding="utf-8").strip().lower()
-        return v if v in ("lt", "en") else None
+        return v if v in KALBOS else None
     except OSError:
         return None
 
@@ -33,26 +38,32 @@ def issaugoti_kalba(lang):
     (d / "kalba.txt").write_text(lang + "\n", encoding="utf-8")
 
 
+# Windows pirminiai kalbu ID (LANGID & 0x3FF), 2026-08-30 su RU/DE.
+_OS_LANGID = {0x27: "lt", 0x19: "ru", 0x07: "de"}
+
+
 def _os_kalba():
-    """OS kalbos aptikimas pirmam paleidimui: lietuviska sistema -> lt."""
+    """OS kalbos aptikimas pirmam paleidimui: lietuviska sistema -> lt,
+    rusiska -> ru, vokiska -> de, visos kitos -> en."""
     try:
         import ctypes
         langid = ctypes.windll.kernel32.GetUserDefaultUILanguage()
-        if (langid & 0x3FF) == 0x27:   # LANG_LITHUANIAN
-            return "lt"
-        return "en"
+        return _OS_LANGID.get(langid & 0x3FF, "en")
     except Exception:
         pass
     try:
         import locale
-        loc = locale.getlocale()[0] or ""
-        return "lt" if loc.lower().startswith("lt") else "en"
+        loc = (locale.getlocale()[0] or "").lower()
+        for pre, k in (("lt", "lt"), ("ru", "ru"), ("de", "de")):
+            if loc.startswith(pre):
+                return k
+        return "en"
     except Exception:
         return "en"
 
 
 _env = os.environ.get("FOTONAMAI_LANG")
-if _env in ("lt", "en"):
+if _env in KALBOS:
     LANG = _env
 else:
     LANG = _issaugota_kalba() or _os_kalba()
@@ -702,11 +713,22 @@ _EN = {
 }
 
 
+from kalba_ru import _RU          # noqa: E402  (po _EN, kad butu salia)
+from kalba_de import _DE          # noqa: E402
+
+_ZODYNAI = {"en": _EN, "ru": _RU, "de": _DE}
+
+
 def t(raktas):
-    """Vertimas: LT rezime grazina rakta, EN - vertima (arba rakta, jei nera)."""
-    if LANG == "en":
-        return _EN.get(raktas, raktas)
-    return raktas
+    """Vertimas: LT rezime grazina rakta, kitur - vertima (arba rakta, jei nera).
+
+    Trukstamas vertimas NELUZTA - parodo lietuviska rakta. Taip programa
+    veikia ir tada, kai zodynas pildomas dalimis.
+    """
+    zod = _ZODYNAI.get(LANG)
+    if zod is None:
+        return raktas
+    return zod.get(raktas, raktas)
 
 
 # (vns, keli 2-9, daug 10-20/0, EN vns, EN dgs)
@@ -716,10 +738,36 @@ _KIEKIAI = {
     "lentyna": ("lentyna", "lentynos", "lentynu", "shelf", "shelves"),
 }
 
+# RU: (vns, keli, daug). DEMESIO - rusu ribos KITOS nei lietuviu:
+# lietuviskai "keli" tesiasi iki 9, rusiskai baigiasi ties 4.
+# Nukopijavus musu taisykle, rusas matytu "5 файла" vietoj "5 файлов".
+_KIEKIAI_RU = {
+    "saltinis": ("источник", "источника", "источников"),
+    "failas": ("файл", "файла", "файлов"),
+    "lentyna": ("полка", "полки", "полок"),
+}
+
+# DE: (vns, dgs) - kaip anglu, dvi formos.
+_KIEKIAI_DE = {
+    "saltinis": ("Quelle", "Quellen"),
+    "failas": ("Datei", "Dateien"),
+    "lentyna": ("Regal", "Regale"),
+}
+
 
 def kiekio_zodis(n, raktas):
     """Zodis pagal skaiciu (valytuvo '1 runs' gramatikos pamoka,
     Roberto radinys 2026-08-07 ir FOTO namuose)."""
+    if LANG == "de":
+        vns, dgs = _KIEKIAI_DE[raktas]
+        return vns if n == 1 else dgs
+    if LANG == "ru":
+        vns, keli, daug = _KIEKIAI_RU[raktas]
+        if n % 10 == 1 and n % 100 != 11:
+            return vns
+        if 2 <= n % 10 <= 4 and not 12 <= n % 100 <= 14:
+            return keli
+        return daug
     vns, keli, daug, en1, enn = _KIEKIAI[raktas]
     if LANG == "en":
         return en1 if n == 1 else enn

@@ -12,6 +12,17 @@ ROOT = Path(__file__).resolve().parent.parent
 CYRILLIC = re.compile("[\\u0400-\\u04ff]")
 TIKRINAMOS = {".py", ".txt", ".json", ".spec"}
 
+# 2026-08-30 (RU/DE kalbos): yra vietu, kur kirilica ne apsimetelis, o
+# turinys. Bet leidziama SIAURAI - tik siuose failuose IR tik teksto
+# eilutese (tarp kabuciu). Komentare ar kode kirilica lieka klaida net
+# cia, nes butent ten homoglifas ir pavojingas.
+KIRILICA_LEIDZIAMA = {
+    "kalba_ru.py",      # visas rusu zodynas
+    "kalba.py",         # _KIEKIAI_RU daugiskaitos formos
+    "gui_langas.py",    # kalbu sarasas
+}
+TEKSTO_EILUTE = re.compile(r'"[^"]*"|\'[^\']*\'')
+
 
 def main():
     bedos = []
@@ -24,8 +35,12 @@ def main():
             tekstas = p.read_text(encoding="utf-8", errors="ignore")
         except OSError:
             continue
+        leidziama = p.name in KIRILICA_LEIDZIAMA
         for i, eilute in enumerate(tekstas.splitlines(), 1):
-            m = CYRILLIC.search(eilute)
+            # Leidziamuose failuose kirilica teksto eilutese yra turinys;
+            # tikrinam tik tai, kas lieka isemus kabutes.
+            tikrinama = TEKSTO_EILUTE.sub("", eilute) if leidziama else eilute
+            m = CYRILLIC.search(tikrinama)
             if m:
                 bedos.append("%s:%d U+%04X" % (
                     p.relative_to(ROOT), i, ord(m.group())))

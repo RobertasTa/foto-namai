@@ -1,5 +1,5 @@
 =====================================================================
-  PHOTO HOME (FOTO namai) v1.0.0 - home photo archive organizer
+  PHOTO HOME (FOTO namai) v1.1 - home photo archive organizer
   Robertas & Claude, 2026
 =====================================================================
 

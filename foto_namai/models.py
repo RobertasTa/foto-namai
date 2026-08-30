@@ -5,7 +5,7 @@ PIPELINE.md (RASTAS -> SUINDEKSUOTAS -> SUPLANUOTAS -> SUTVARKYTAS ...).
 """
 
 # Programos versija (rodoma "Apie..." langelyje ir buduose)
-VERSIJA = "1.0.0"
+VERSIJA = "1.1"
 
 # Juodasis sarasas (PLANAS sprendimas 8, Nextcloud incidento pamoka):
 # sitie katalogai NIEKADA neskenuojami - "kopiju pasauliai" ir sisteminiai.

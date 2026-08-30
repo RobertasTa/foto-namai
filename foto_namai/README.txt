@@ -1,5 +1,5 @@
 =====================================================================
-  PHOTO HOME (FOTO namai) v1.0.0 - nuotrauku archyvo tvarkytojas
+  PHOTO HOME (FOTO namai) v1.1 - nuotrauku archyvo tvarkytojas
   Robertas & Claude, 2026
 =====================================================================
 

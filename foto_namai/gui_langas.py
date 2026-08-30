@@ -292,8 +292,13 @@ class MainWindow(QMainWindow):
         self._cmb_kalba = QComboBox()
         self._cmb_kalba.addItem("Lietuvių", "lt")   # ASCII kode
         self._cmb_kalba.addItem("English", "en")
+        self._cmb_kalba.addItem("Русский", "ru")    # 2026-08-30
+        self._cmb_kalba.addItem("Deutsch", "de")
         from kalba import LANG as _dabartine_kalba
-        self._cmb_kalba.setCurrentIndex(1 if _dabartine_kalba == "en" else 0)
+        # 2026-08-30: buvo "1 jei en, kitaip 0" - su keturiomis kalbomis
+        # rusas butu matesi "Lietuviu" sarase, nors programa kalba rusiskai.
+        _idx = self._cmb_kalba.findData(_dabartine_kalba)
+        self._cmb_kalba.setCurrentIndex(_idx if _idx >= 0 else 0)
         self._cmb_kalba.setToolTip(
             t("Kalba pritaikoma paleidus programa is naujo."))
         self._cmb_kalba.currentIndexChanged.connect(self._on_kalba_changed)
