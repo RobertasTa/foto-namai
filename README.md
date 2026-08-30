@@ -227,9 +227,16 @@ just ours. It is probably the most useful 30 seconds you can spend before
 opening something new that came off the internet. If this gift teaches you
 only that, it has already paid for itself.
 
-**What our own scan showed**, so you know what to expect: PHOTO home 1.0.0 —
-**[0 of 66 engines flagged it](https://www.virustotal.com/gui/file/1b34b9c671bca2c1ffd57cb9d441fba745e90e01250a4a5561de32e459a15dbf)**
-(scanned on release day, 2026-08-29).
+**What our own scans showed — both numbers, including the less flattering
+one.** The downloaded
+**[zip is 0 of 66](https://www.virustotal.com/gui/file/1b34b9c671bca2c1ffd57cb9d441fba745e90e01250a4a5561de32e459a15dbf)**,
+but that is the archive. Unpack it and check the program itself and you get
+**[3 of 70 for `PhotoHome.exe`](https://www.virustotal.com/gui/file/d178d8a6554034aa0287e24128bfb016e64d3f7e2857808b6709b72a82fe8095)**
+— Arctic Wolf (`Unsafe`), SecureAge (`Malicious`) and Microsoft
+(`Trojan:Win32/Wacatac.B!ml`), with the other 67 clean. We print the second
+number too, because quoting only the zip would look tidy and mislead you.
+Our sibling gifts sit in the same place: Smart Duplicate Finder 4/69, Temp
+Cleaner 3/71.
 
 **If you ever do see a red mark — why it is not a reason to be afraid.**
 Programs like this one sometimes collect one or two red marks (our sibling
@@ -263,13 +270,22 @@ drawer, so it picks the nearest one in its list. Look at the proportion
 instead — three small scanners against sixty-eight silent ones is a very
 different picture from half the page agreeing.
 
-**And you can check behaviour, not just opinions.** On the same VirusTotal
-report open the **BEHAVIOR** tab: that is not an antivirus opinion but a
-record of the program actually being run in their sandbox — what it
-touched, what it dropped, and whether it talked to the internet. For our
-sibling gift Temp Cleaner that tab reads *network comms: not found*, which
-is somebody else's machine confirming our "no network, no telemetry"
-claim, with no reason to do us a favour. Check ours the same way.
+**And you can check behaviour, not just opinions** — with one caveat we
+learned by getting it wrong ourselves. The **BEHAVIOR** tab on the same
+report is a record of the file actually being run inside a sandbox: what it
+touched, what it dropped, whether it used the network. Useful — but the
+sandbox is a whole Windows machine, and Windows chats to Microsoft on its
+own, so a stray DNS lookup to something like `assets.msn.com` in that report
+is the *test machine*, not us. (That is exactly what ours shows, and we are
+not going to pretend otherwise.)
+
+**The check that depends on nobody's sandbox is the source.** This program
+imports no networking library at all — no `socket`, no `requests`, no
+`urllib.request`, no `aiohttp`. Search this repository for those words: you
+will find `urllib.parse` used to percent-encode text, and `webbrowser.open`,
+which hands a link to *your* browser when *you* press the "Ask AI" button.
+That is the whole of it, and unlike any scan result, you can verify it in
+one minute without trusting anyone.
 
 **What would genuinely be alarming:** many engines agreeing, a concrete
 threat description, or a BEHAVIOR tab showing network traffic from a
