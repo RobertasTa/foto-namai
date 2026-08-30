@@ -13,6 +13,15 @@
 ;  - Portable zip release'e LIEKA. Instaliatorius yra PAPILDOMAS kelias.
 ;  - AppId GUID FIKSUOTAS - NIEKADA nekeisti (kitaip senos versijos liks).
 
+; LICENSE gyvena skirtingose vietose: repo saknyje (ir CI) arba
+; _publikavimas\foto-namai\ (darbiniame kataloge). Skriptas turi veikti
+; abiejose, kitaip CI statyba luztu del vieno failo kelio.
+#if FileExists(AddBackslash(SourcePath) + "..\LICENSE")
+  #define LicKelias "..\LICENSE"
+#else
+  #define LicKelias "..\_publikavimas\foto-namai\LICENSE"
+#endif
+
 #define AppName      "PHOTO home"
 #define AppVersion   "1.1"
 #define AppExeName   "PhotoHome.exe"
@@ -59,7 +68,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 ; Visas onedir aplankas: PhotoHome.exe + _internal\ (rekursyviai)
 Source: "..\dist\PhotoHome\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\_publikavimas\foto-namai\LICENSE"; DestDir: "{app}"; DestName: "LICENSE.txt"; Flags: ignoreversion
+Source: "{#LicKelias}"; DestDir: "{app}"; DestName: "LICENSE.txt"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExeName}"

@@ -1,0 +1,146 @@
+# Leidimo konvejeris: nuo zymes iki release'o be nei vieno rankinio zingsnio.
+#
+# Kodel: iki 2026-08-30 kiekvienas leidimas buvo keturi rankiniai darbai -
+# statyba, instaliatorius, VirusTotal ir winget. Su keturiomis kalbomis ir
+# dviem programom tai auga geometriskai. Ir dar viena priezastis: SignPath
+# Foundation nemokama kodo parasa duoda tik CI statytiems failams, o ne
+# tiems, kurie surenkami ant stalo.
+#
+# Paleidimas:
+#   git tag v1.2 && git push origin v1.2
+# arba ranka per Actions (workflow_dispatch) - tada release'as nekuriamas,
+# tik pastatoma ir paliekama artefaktuose apziurai.
+#
+# Pasirenkami zingsniai ijungiami tik tada, kai yra atitinkamas secret:
+#   VT_API_KEY   - VirusTotal skenavimas (nemokamas raktas)
+#   WINGET_TOKEN - automatinis winget PR
+# Ju nesant workflow nelunga, tik praleidzia ta zingsni.
+
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    # Job lygyje, nes step'o `if` savo paties `env` dar nemato.
+    env:
+      VT_KEY: ${{ secrets.VT_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller
+
+      # Versija gyvena dviejose vietose ir privalo sutapti su zyme.
+      # Geriau sustoti cia, nei isleisti paketa, kuris vadinasi kitaip,
+      # nei rodo pati programa.
+      - name: Versions must match the tag
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}" -replace '^v', ''
+          $models = (Select-String -Path foto_namai/models.py -Pattern 'VERSIJA\s*=\s*"([^"]+)"').Matches[0].Groups[1].Value
+          $iss = (Select-String -Path _instaliatorius/PhotoHome.iss -Pattern '#define AppVersion\s+"([^"]+)"').Matches[0].Groups[1].Value
+          Write-Host "tag=$tag  models.py=$models  PhotoHome.iss=$iss"
+          if ($models -ne $tag) { Write-Error "models.py VERSIJA ($models) != tag ($tag)"; exit 1 }
+          if ($iss -ne $tag) { Write-Error "PhotoHome.iss AppVersion ($iss) != tag ($tag)"; exit 1 }
+
+      - name: Generate the proving ground (fixed seed, reproducible)
+        run: python poligonas_gen.py
+
+      - name: Run checks
+        shell: pwsh
+        run: |
+          $suite = @("patikra_e1","patikra_e2","patikra_e2_egzaminas",
+                     "patikra_e4","patikra_e5_paieska","patikra_e6_egzaminas",
+                     "patikra_e7_siuksles","patikra_hashai","patikra_higiena")
+          foreach ($p in $suite) {
+            Write-Host "=== $p ==="
+            python "foto_namai/_patikros/$p.py"
+            if ($LASTEXITCODE -ne 0) { exit 1 }
+          }
+
+      - name: Build the program (PyInstaller, onedir)
+        run: pyinstaller PhotoHome.spec --noconfirm --clean
+
+      # Smoke: langas turi atsidaryti. Be jo galima isleisti paketa, kuris
+      # susikompiliuoja, bet nepasileidzia (PyInstaller klasika).
+      - name: Smoke - the window must open
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath "dist/PhotoHome/PhotoHome.exe" -PassThru
+          Start-Sleep -Seconds 20
+          $p.Refresh()
+          if ($p.HasExited) { Write-Error "PhotoHome.exe exited with $($p.ExitCode)"; exit 1 }
+          Write-Host "window title: $($p.MainWindowTitle)"
+          Stop-Process -Id $p.Id -Force
+
+      - name: Build the installer (Inno Setup)
+        shell: pwsh
+        run: |
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            Write-Host "Inno Setup not preinstalled - installing"
+            choco install innosetup -y --no-progress
+          }
+          if (-not (Test-Path $iscc)) { $iscc = "C:\Program Files\Inno Setup 6\ISCC.exe" }
+          & $iscc _instaliatorius/PhotoHome.iss
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+      - name: Pack the portable zip
+        shell: pwsh
+        run: |
+          $v = "${{ github.ref_name }}" -replace '^v', ''
+          if (-not $v) { $v = "dev" }
+          Compress-Archive -Path dist/PhotoHome -DestinationPath "dist/PhotoHome-$v-win64.zip" -CompressionLevel Optimal
+
+      - name: Checksums
+        shell: pwsh
+        run: |
+          Get-ChildItem dist/*.exe, dist/*.zip | ForEach-Object {
+            $h = Get-FileHash $_.FullName -Algorithm SHA256
+            "$($_.Name)`n  SHA256: $($h.Hash.ToLower())`n  size:   $($_.Length)"
+          }
+
+      - name: VirusTotal scan
+        if: env.VT_KEY != ''
+        uses: crazy-max/ghaction-virustotal@v4
+        with:
+          vt_api_key: ${{ secrets.VT_API_KEY }}
+          files: |
+            dist/*.exe
+            dist/*.zip
+
+      - name: Keep the build for inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: PhotoHome-build
+          path: |
+            dist/*.exe
+            dist/*.zip
+          retention-days: 14
+
+      # Release'as kuriamas TIK is zymes. Aprasas nerasomas automatiskai -
+      # ji rasom mes patys (Roberto taisykle: viesi tekstai tik salta galva),
+      # todel release paliekamas juodrasciu, kol tekstas neiraso zmogus.
+      - name: Attach to the release (draft)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: |
+            dist/*.exe
+            dist/*.zip
