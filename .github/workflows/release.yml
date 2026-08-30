@@ -100,11 +100,15 @@ jobs:
           & $iscc _instaliatorius/PhotoHome.iss
           if ($LASTEXITCODE -ne 0) { exit 1 }
 
+      # Versija imama IS PROGRAMOS, ne is github.ref_name: rankiniame
+      # paleidime ref_name yra sakos vardas ir 2026-08-30 gyvas testas
+      # pagamino "PhotoHome-master-win64.zip". Su zyme abu sutampa,
+      # nes auksciau tikrinama, kad sutaptu.
       - name: Pack the portable zip
         shell: pwsh
         run: |
-          $v = "${{ github.ref_name }}" -replace '^v', ''
-          if (-not $v) { $v = "dev" }
+          $v = (Select-String -Path foto_namai/models.py -Pattern 'VERSIJA\s*=\s*"([^"]+)"').Matches[0].Groups[1].Value
+          Write-Host "version from models.py: $v"
           Compress-Archive -Path dist/PhotoHome -DestinationPath "dist/PhotoHome-$v-win64.zip" -CompressionLevel Optimal
 
       - name: Checksums
