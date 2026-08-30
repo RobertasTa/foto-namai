@@ -197,9 +197,16 @@ run `PhotoHome.exe`. No installation.
 **Requirements:** Windows 10 or newer, 64-bit (a hard Qt6/Python
 toolchain limit — Windows 7/8 will not start).
 
-> **Note:** the exe is unsigned (homemade), so Windows SmartScreen may
-> show "Windows protected your PC" on first run — click **More info →
-> Run anyway**.
+> **Note — the blue screen on first run, and how to get past it.** The exe
+> is unsigned (homemade), so Windows SmartScreen *will* greet you with
+> **"Windows protected your PC"**. Read this before it scares you: the first
+> screen offers **only "Don't run"** — there is no visible way forward. The
+> way through is the small **More info** link; only after clicking it does
+> **Run anyway** appear, together with `App: PhotoHome.exe` and
+> `Publisher: Unknown publisher` (that is us — an unsigned program has no
+> publisher name). Both steps, photographed on a clean download:
+>
+> ![Windows SmartScreen: the first screen offers only Don't run; after clicking More info, Run anyway appears](docs/screenshots/smartscreen.png)
 
 > **Antivirus false positives:** some antivirus products dislike
 > unsigned PyInstaller-packed exes. The program contains no network code
