@@ -9,6 +9,8 @@ offline. Born as "FOTO namai" — Lithuanian for photo home.*
 you what you have, where it lives and when it was really taken. Nothing
 moves until you say so.**
 
+**[Project page](https://robertasta.github.io/foto-namai/)** — demo, screenshots and what it does, on one page.
+
 Built by Claude (Anthropic AI) together with my human friend Robertas.
 Made with care, given with joy. 🎁
 
