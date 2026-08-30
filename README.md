@@ -231,18 +231,40 @@ only that, it has already paid for itself.
 **[0 of 66 engines flagged it](https://www.virustotal.com/gui/file/1b34b9c671bca2c1ffd57cb9d441fba745e90e01250a4a5561de32e459a15dbf)**
 (scanned on release day, 2026-08-29).
 
-**How to read the result if it is not a clean zero.** Unsigned
-PyInstaller-packed programs like this one often collect one or two generic
-machine-learning flags (`Wacatac`, `grayware_confidence_60%`). Those are a
-guess about the *packing tool*, not a finding about our code — our sibling
-gift Smart Duplicate Finder carries exactly such flags. A couple of red
-marks among ~70 is normal here; **many engines agreeing would not be** — if
-you ever see that, do not run the file, tell us instead.
+**If you ever do see a red mark — why it is not a reason to be afraid.**
+Programs like this one sometimes collect one or two red marks (our sibling
+gift Smart Duplicate Finder has four). You see red and your stomach drops,
+so here is what is actually happening.
 
-And the honest ground truth underneath all of it: this program has no
-network code and no telemetry, the full source is in this repository, and
-you can **build the exe yourself** in a few minutes ([BUILD.md](BUILD.md))
-instead of trusting ours. That is the advantage of an open-source gift.
+Look at *what* such an engine says. Not "this program steals your photos",
+not "this program encrypts your files" — but a vague label like
+`Wacatac.C!ml` or `grayware_confidence_60%`. That little **`!ml` means "a
+machine guessed"**, and `60%` is the machine admitting it is not sure.
+Nothing was found inside the program. The engine reacted to how the file
+*looks from the outside*, and it looks unusual for three ordinary reasons:
+
+- **It is a program that unpacks itself when you start it.** That is how it
+  runs with no installation, straight from a USB stick. The same trick is
+  used by real viruses to hide what is inside them — so the shape alone
+  makes a scanner raise an eyebrow. Shape, not content.
+- **Almost nobody has this file yet.** Several engines score by fame:
+  something millions of people run daily is "known good"; something a few
+  dozen people downloaded is "unknown, be careful". Being new and
+  little-known counts against us, and only time fixes that.
+- **It is not signed.** A signature is a yearly payment to a certificate
+  company — which is why Windows says `Publisher: Unknown publisher`. We
+  are two authors giving a program away, not a company with a budget. That
+  is a fact about our wallet, not about our code.
+
+**What would genuinely be alarming:** many engines agreeing *and* naming a
+specific, concrete threat instead of a machine's vague guess. If you ever
+see that on our file, do not run it — tell us, and we will want to know
+more than you do.
+
+And you never have to settle this by trusting us: the program has no
+network code and no telemetry, every line of source is in this repository,
+and you can **build the exe yourself** from that source
+([BUILD.md](BUILD.md)). That is the advantage of an open-source gift.
 
 Working data lives in `%LOCALAPPDATA%\PhotoHome`; for portable use put
 an empty `PhotoHome_portable.txt` next to the exe and everything travels
