@@ -208,12 +208,41 @@ toolchain limit — Windows 7/8 will not start).
 >
 > ![Windows SmartScreen: the first screen offers only Don't run; after clicking More info, Run anyway appears](docs/screenshots/smartscreen.png)
 
-> **Antivirus false positives:** some antivirus products dislike
-> unsigned PyInstaller-packed exes. The program contains no network code
-> and no telemetry — the full source is in this repository, so you can
-> audit the code and **build the exe yourself** in a few minutes:
-> [BUILD.md](BUILD.md). That is the honest advantage of an open-source
-> gift.
+### Don't take our word for it — check the file yourself
+
+A stranger on the internet telling you their program is safe is worth
+nothing. So here is how to check it, in about 30 seconds, with no account
+and nothing installed:
+
+1. Open **[virustotal.com](https://www.virustotal.com/)** and drag the file
+   you downloaded onto the page (or press *Choose file*).
+2. Around 70 antivirus engines scan it and you see every single verdict.
+3. VirusTotal also shows the file's **SHA-256**. Compare it with the SHA-256
+   printed in this version's [release description](../../releases/latest).
+   If they match, you have exactly the file we published — byte for byte,
+   nothing swapped on the way.
+
+**Keep this trick.** It works for *any* file you download, from anyone — not
+just ours. It is probably the most useful 30 seconds you can spend before
+opening something new that came off the internet. If this gift teaches you
+only that, it has already paid for itself.
+
+**What our own scan showed**, so you know what to expect: PHOTO home 1.0.0 —
+**[0 of 66 engines flagged it](https://www.virustotal.com/gui/file/1b34b9c671bca2c1ffd57cb9d441fba745e90e01250a4a5561de32e459a15dbf)**
+(scanned on release day, 2026-08-29).
+
+**How to read the result if it is not a clean zero.** Unsigned
+PyInstaller-packed programs like this one often collect one or two generic
+machine-learning flags (`Wacatac`, `grayware_confidence_60%`). Those are a
+guess about the *packing tool*, not a finding about our code — our sibling
+gift Smart Duplicate Finder carries exactly such flags. A couple of red
+marks among ~70 is normal here; **many engines agreeing would not be** — if
+you ever see that, do not run the file, tell us instead.
+
+And the honest ground truth underneath all of it: this program has no
+network code and no telemetry, the full source is in this repository, and
+you can **build the exe yourself** in a few minutes ([BUILD.md](BUILD.md))
+instead of trusting ours. That is the advantage of an open-source gift.
 
 Working data lives in `%LOCALAPPDATA%\PhotoHome`; for portable use put
 an empty `PhotoHome_portable.txt` next to the exe and everything travels
