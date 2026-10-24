@@ -191,7 +191,14 @@ and safety rails a non-technical person can trust.
 
 ## Download
 
-Grab the latest zip from **[Releases](../../releases)**: unpack anywhere,
+The quick way (Windows 10/11 built-in package manager):
+
+```
+winget install RobertasTa.PhotoHome
+```
+
+winget brings the version that has passed Microsoft's review, which can lag a few weeks behind
+Releases. Or grab the latest zip from **[Releases](../../releases)**: unpack anywhere,
 run `PhotoHome.exe`. No installation.
 
 **Requirements:** Windows 10 or newer, 64-bit (a hard Qt6/Python
