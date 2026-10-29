@@ -235,19 +235,25 @@ opening something new that came off the internet. If this gift teaches you
 only that, it has already paid for itself.
 
 **What our own scans showed — both numbers, including the less flattering
-one.** The downloaded
-**[zip is 0 of 66](https://www.virustotal.com/gui/file/1b34b9c671bca2c1ffd57cb9d441fba745e90e01250a4a5561de32e459a15dbf)**,
+one** (checked 29 October 2026). For version 1.1 the downloaded
+**[zip is 0 of 66](https://www.virustotal.com/gui/file/7c9a95ce6728180bd6bd59b93b02e74fe8e9743b006d2c6e580d501d382d78e4)**,
 but that is the archive. Unpack it and check the program itself and you get
-**[3 of 70 for `PhotoHome.exe`](https://www.virustotal.com/gui/file/d178d8a6554034aa0287e24128bfb016e64d3f7e2857808b6709b72a82fe8095)**
-— Arctic Wolf (`Unsafe`), SecureAge (`Malicious`) and Microsoft
-(`Trojan:Win32/Wacatac.B!ml`), with the other 67 clean. We print the second
-number too, because quoting only the zip would look tidy and mislead you.
-Our sibling gifts sit in the same place: Smart Duplicate Finder 4/69, Temp
-Cleaner 3/71.
+**[1 of 71 for `PhotoHome.exe`](https://www.virustotal.com/gui/file/41c032f84e5434dd80226ff305a7581a529814a98eee87908cc07a0c30a9b1c3)**:
+SecureAge, which says only `Malicious` and gives no name. The other 70 are
+clean. We print the second number too, because quoting only the zip would
+look tidy and mislead you.
+
+It used to be worse. When we first published (v1.0.0), the program showed
+3 of 70, and one of the three was Microsoft's own Defender
+(`Trojan:Win32/Wacatac.B!ml`). We reported it to Microsoft as a false
+positive on 30 August. By mid-October Microsoft no longer flagged either
+version, and the [v1.0.0 file](https://www.virustotal.com/gui/file/d178d8a6554034aa0287e24128bfb016e64d3f7e2857808b6709b72a82fe8095)
+is down to 1 of 70. Our sibling gifts: Smart Duplicate Finder 3/66, Temp
+Cleaner 3/68, and Microsoft flags neither.
 
 **If you ever do see a red mark — why it is not a reason to be afraid.**
-Programs like this one sometimes collect one or two red marks (our sibling
-gift Smart Duplicate Finder has four). You see red and your stomach drops,
+Programs like this one sometimes collect one to three red marks (each of
+our sibling gifts has three). You see red and your stomach drops,
 so here is what is actually happening.
 
 Look at *what* such an engine says. Not "this program steals your photos",
@@ -257,10 +263,11 @@ machine guessed"**, and `60%` is the machine admitting it is not sure.
 Nothing was found inside the program. The engine reacted to how the file
 *looks from the outside*, and it looks unusual for three ordinary reasons:
 
-- **It is a program that unpacks itself when you start it.** That is how it
-  runs with no installation, straight from a USB stick. The same trick is
-  used by real viruses to hide what is inside them — so the shape alone
-  makes a scanner raise an eyebrow. Shape, not content.
+- **It is built with PyInstaller.** That free tool packs a Python program
+  together with everything it needs, which is how it runs with no
+  installation, straight from a USB stick. The same free tool is popular
+  with people who write real viruses, so its launcher alone makes some
+  scanners raise an eyebrow. Shape, not content.
 - **Almost nobody has this file yet.** Several engines score by fame:
   something millions of people run daily is "known good"; something a few
   dozen people downloaded is "unknown, be careful". Being new and
@@ -283,8 +290,9 @@ report is a record of the file actually being run inside a sandbox: what it
 touched, what it dropped, whether it used the network. Useful — but the
 sandbox is a whole Windows machine, and Windows chats to Microsoft on its
 own, so a stray DNS lookup to something like `assets.msn.com` in that report
-is the *test machine*, not us. (That is exactly what ours shows, and we are
-not going to pretend otherwise.)
+is the *test machine*, not us. (Ours shows exactly that: one DNS packet in
+the 1.1 report, a lookup to `assets.msn.com` in the 1.0.0 one. We are not
+going to pretend otherwise.)
 
 **The check that depends on nobody's sandbox is the source.** This program
 imports no networking library at all — no `socket`, no `requests`, no
